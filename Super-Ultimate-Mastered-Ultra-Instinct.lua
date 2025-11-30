@@ -159,7 +159,7 @@ SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Position = UDim2.new(0.05, 0, 0.32, 0)
 SpeedLabel.Size = UDim2.new(0.9, 0, 0, 18)
 SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.Text = "💨 Speed: 5.0x"
+SpeedLabel.Text = "💨 Speed: 8.0x"
 SpeedLabel.TextColor3 = Color3.fromRGB(150, 255, 200)
 SpeedLabel.TextSize = 13
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -181,7 +181,7 @@ FeatureLabel.BackgroundTransparency = 1
 FeatureLabel.Position = UDim2.new(0.05, 0, 0.8, 0)
 FeatureLabel.Size = UDim2.new(0.9, 0, 0, 18)
 FeatureLabel.Font = Enum.Font.Gotham
-FeatureLabel.Text = "✨ All Systems Active"
+FeatureLabel.Text = "✨ MAXIMUM POWER MODE"
 FeatureLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
 FeatureLabel.TextSize = 11
 FeatureLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -230,7 +230,7 @@ WarningLabel.TextSize = 16
 WarningLabel.TextScaled = true
 WarningLabel.Parent = WarningFrame
 
--- LIMIT BREAKER AURA
+-- LIMIT BREAKER AURA (ENHANCED)
 local auraObjects = {}
 
 local function destroyAura()
@@ -246,39 +246,43 @@ local function createAura()
 	destroyAura()
 	
 	local isMastered = UI_MODE == "MASTERED"
-	local auraColor = isMastered and Color3.fromRGB(200, 220, 255) or Color3.fromRGB(100, 150, 200)
-	local ringColor = isMastered and Color3.fromRGB(150, 200, 255) or Color3.fromRGB(80, 120, 180)
+	local auraColor = isMastered and Color3.fromRGB(220, 240, 255) or Color3.fromRGB(120, 170, 220)
+	local ringColor = isMastered and Color3.fromRGB(180, 220, 255) or Color3.fromRGB(100, 140, 200)
 	
+	-- Main aura (bigger)
 	local aura = Instance.new("Part")
 	aura.Name = "LimitBreakerAura"
-	aura.Size = Vector3.new(12, 12, 12)
+	aura.Size = Vector3.new(18, 18, 18)
 	aura.Anchored = true
 	aura.CanCollide = false
 	aura.Material = Enum.Material.Neon
 	aura.Color = auraColor
-	aura.Transparency = isMastered and 0.65 or 0.75
+	aura.Transparency = isMastered and 0.6 or 0.7
 	aura.Shape = Enum.PartType.Ball
 	aura.CFrame = RootPart.CFrame
 	aura.Parent = FXFolder
 	table.insert(auraObjects, aura)
 	
-	-- Outer ring
-	local outerRing = Instance.new("Part")
-	outerRing.Size = Vector3.new(0.5, 18, 18)
-	outerRing.Anchored = true
-	outerRing.CanCollide = false
-	outerRing.Material = Enum.Material.Neon
-	outerRing.Color = ringColor
-	outerRing.Transparency = 0.7
-	outerRing.CFrame = RootPart.CFrame
-	outerRing.Parent = FXFolder
+	-- Multiple energy rings
+	for i = 1, 5 do
+		local ring = Instance.new("Part")
+		ring.Size = Vector3.new(0.6, 12 + (i * 4), 12 + (i * 4))
+		ring.Anchored = true
+		ring.CanCollide = false
+		ring.Material = Enum.Material.Neon
+		ring.Color = ringColor
+		ring.Transparency = 0.65
+		ring.CFrame = RootPart.CFrame
+		ring.Parent = FXFolder
+		
+		local mesh = Instance.new("SpecialMesh")
+		mesh.MeshType = Enum.MeshType.Cylinder
+		mesh.Parent = ring
+		
+		table.insert(auraObjects, ring)
+	end
 	
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Cylinder
-	mesh.Parent = outerRing
-	table.insert(auraObjects, outerRing)
-	
-	return aura, outerRing
+	return aura
 end
 
 -- AFTERIMAGE EFFECT (ENHANCED)
@@ -309,7 +313,7 @@ local function createAfterimage()
 	end
 end
 
--- SHOCKWAVE EFFECT
+-- SHOCKWAVE EFFECT (ENHANCED)
 local function createShockwave(position)
 	if not SHOCKWAVE_ENABLED then return end
 	
@@ -319,52 +323,52 @@ local function createShockwave(position)
 	shockwave.Anchored = true
 	shockwave.CanCollide = false
 	shockwave.Material = Enum.Material.Neon
-	shockwave.Color = Color3.fromRGB(150, 200, 255)
-	shockwave.Transparency = 0.3
+	shockwave.Color = Color3.fromRGB(200, 230, 255)
+	shockwave.Transparency = 0.2
 	shockwave.Shape = Enum.PartType.Ball
 	shockwave.Parent = FXFolder
 	
-	-- Expand shockwave
-	TweenService:Create(shockwave, TweenInfo.new(0.5), {
-		Size = Vector3.new(25, 25, 25),
+	-- Expand shockwave (BIGGER)
+	TweenService:Create(shockwave, TweenInfo.new(0.6), {
+		Size = Vector3.new(35, 35, 35),
 		Transparency = 1
 	}):Play()
 	
-	-- Push nearby players
+	-- Push nearby players (STRONGER)
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer and player.Character then
 			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
 			if theirRoot then
 				local distance = (theirRoot.Position - position).Magnitude
-				if distance < 15 then
+				if distance < 20 then
 					local pushDirection = (theirRoot.Position - position).Unit
-					theirRoot.Velocity = pushDirection * 200
+					theirRoot.Velocity = pushDirection * 400 + Vector3.new(0, 150, 0)
 				end
 			end
 		end
 	end
 	
-	Debris:AddItem(shockwave, 0.5)
+	Debris:AddItem(shockwave, 0.6)
 end
 
--- DODGE EFFECT (ENHANCED)
+-- DODGE EFFECT (MAXIMUM POWER)
 local function createDodgeEffect(position)
-	-- Main sphere
+	-- Main sphere (BIGGER)
 	local part = Instance.new("Part")
-	part.Size = Vector3.new(8, 8, 8)
+	part.Size = Vector3.new(12, 12, 12)
 	part.Position = position
 	part.Anchored = true
 	part.CanCollide = false
 	part.Material = Enum.Material.Neon
-	part.Color = Color3.fromRGB(150, 200, 255)
-	part.Transparency = 0.2
+	part.Color = Color3.fromRGB(200, 230, 255)
+	part.Transparency = 0.15
 	part.Shape = Enum.PartType.Ball
 	part.Parent = FXFolder
 	
-	-- Lightning ring
-	for i = 1, 12 do
+	-- Lightning ring (MORE BOLTS)
+	for i = 1, 20 do
 		local lightning = Instance.new("Part")
-		lightning.Size = Vector3.new(0.4, 5, 0.4)
+		lightning.Size = Vector3.new(0.5, 7, 0.5)
 		lightning.Position = position
 		lightning.Anchored = true
 		lightning.CanCollide = false
@@ -372,21 +376,45 @@ local function createDodgeEffect(position)
 		lightning.Color = Color3.fromRGB(255, 255, 255)
 		lightning.Parent = FXFolder
 		
-		local angle = (i / 12) * math.pi * 2
-		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 4)
+		local angle = (i / 20) * math.pi * 2
+		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 5)
 		
-		TweenService:Create(lightning, TweenInfo.new(0.25), {
+		TweenService:Create(lightning, TweenInfo.new(0.3), {
 			Transparency = 1,
-			Size = Vector3.new(0.2, 8, 0.2)
+			Size = Vector3.new(0.3, 12, 0.3)
 		}):Play()
-		Debris:AddItem(lightning, 0.25)
+		Debris:AddItem(lightning, 0.3)
 	end
 	
-	TweenService:Create(part, TweenInfo.new(0.5), {
-		Size = Vector3.new(16, 16, 16),
+	-- Energy burst particles
+	for i = 1, 12 do
+		local particle = Instance.new("Part")
+		particle.Size = Vector3.new(1.5, 1.5, 1.5)
+		particle.Position = position
+		particle.Anchored = true
+		particle.CanCollide = false
+		particle.Material = Enum.Material.Neon
+		particle.Color = Color3.fromRGB(180, 220, 255)
+		particle.Transparency = 0.3
+		particle.Shape = Enum.PartType.Ball
+		particle.Parent = FXFolder
+		
+		local angle = (i / 12) * math.pi * 2
+		local targetPos = position + Vector3.new(math.cos(angle) * 8, math.random(-3, 3), math.sin(angle) * 8)
+		
+		TweenService:Create(particle, TweenInfo.new(0.4), {
+			Position = targetPos,
+			Size = Vector3.new(0.3, 0.3, 0.3),
+			Transparency = 1
+		}):Play()
+		Debris:AddItem(particle, 0.4)
+	end
+	
+	TweenService:Create(part, TweenInfo.new(0.6), {
+		Size = Vector3.new(24, 24, 24),
 		Transparency = 1
 	}):Play()
-	Debris:AddItem(part, 0.5)
+	Debris:AddItem(part, 0.6)
 	
 	createShockwave(position)
 end
@@ -442,31 +470,43 @@ end
 
 -- PREDICTION DODGE (Dodge before contact)
 local function checkPrediction()
+	if not UI_ENABLED then return end
+	
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer and player.Character then
 			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
-			if theirRoot then
+			local theirHumanoid = player.Character:FindFirstChild("Humanoid")
+			if theirRoot and theirHumanoid then
 				local distance = (theirRoot.Position - RootPart.Position).Magnitude
 				local theirVelocity = theirRoot.Velocity.Magnitude
 				
-				-- If someone fast is approaching
-				if distance < PREDICTION_RANGE and theirVelocity > 50 then
-					-- Predict dodge
-					local dodgeDirection = (RootPart.Position - theirRoot.Position).Unit
-					local dodgePosition = RootPart.Position + (dodgeDirection * 15)
+				-- Only trigger if they have EXTREME velocity (likely fling attack)
+				-- AND they're moving toward you
+				if distance < PREDICTION_RANGE and theirVelocity > 500 then
+					local direction = (RootPart.Position - theirRoot.Position).Unit
+					local theirDirection = theirRoot.Velocity.Unit
 					
-					if INSTANT_TRANSMISSION then
-						createTransmissionEffect(RootPart.Position)
+					-- Check if they're actually moving toward you
+					local dotProduct = direction.X * theirDirection.X + direction.Z * theirDirection.Z
+					
+					if dotProduct > 0.5 then -- Moving toward you
+						-- Predict dodge
+						local dodgeDirection = (RootPart.Position - theirRoot.Position).Unit
+						local dodgePosition = RootPart.Position + (dodgeDirection * 15)
+						
+						if INSTANT_TRANSMISSION then
+							createTransmissionEffect(RootPart.Position)
+						end
+						
+						RootPart.CFrame = CFrame.new(dodgePosition)
+						createDodgeEffect(dodgePosition)
+						
+						dodgeCount = dodgeCount + 1
+						DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
+						uiEnergy = math.min(100, uiEnergy + 5)
+						
+						break
 					end
-					
-					RootPart.CFrame = CFrame.new(dodgePosition)
-					createDodgeEffect(dodgePosition)
-					
-					dodgeCount = dodgeCount + 1
-					DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
-					uiEnergy = math.min(100, uiEnergy + 5)
-					
-					break
 				end
 			end
 		end
@@ -486,17 +526,22 @@ local function startLimitBreakerUI()
 	Humanoid.WalkSpeed = 16 * speedMultiplier
 	SpeedLabel.Text = "💨 Speed: " .. speedMultiplier .. "x"
 	
-	-- Create aura
-	local aura, ring = createAura()
+	-- Create aura with multiple rings
+	local aura = createAura()
+	local ringIndex = 0
 	AuraConnection = RunService.Heartbeat:Connect(function()
 		if not UI_ENABLED or not aura or not aura.Parent then return end
 		
-		aura.CFrame = RootPart.CFrame * CFrame.Angles(0, math.rad(tick() * 60), 0)
-		local scale = 1 + math.sin(tick() * 4) * 0.15
-		aura.Size = Vector3.new(12 * scale, 12 * scale, 12 * scale)
+		aura.CFrame = RootPart.CFrame * CFrame.Angles(0, math.rad(tick() * 80), 0)
+		local scale = 1 + math.sin(tick() * 5) * 0.2
+		aura.Size = Vector3.new(18 * scale, 18 * scale, 18 * scale)
 		
-		if ring and ring.Parent then
-			ring.CFrame = RootPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad(tick() * 120))
+		-- Animate all rings
+		ringIndex = ringIndex + 1
+		for i, obj in pairs(auraObjects) do
+			if obj ~= aura and obj.Parent then
+				obj.CFrame = RootPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad((i * 72) + (tick() * 150)))
+			end
 		end
 	end)
 	
@@ -506,10 +551,15 @@ local function startLimitBreakerUI()
 		checkProximity()
 	end)
 	
-	-- Prediction system
+	-- Prediction system (check less frequently to avoid false triggers)
+	local predictionTick = 0
 	PredictionConnection = RunService.Heartbeat:Connect(function()
 		if not UI_ENABLED then return end
-		checkPrediction()
+		predictionTick = predictionTick + 1
+		if predictionTick >= 10 then -- Only check every 10 frames
+			checkPrediction()
+			predictionTick = 0
+		end
 	end)
 	
 	-- Afterimage trail
@@ -664,8 +714,10 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 print("⚡🔥 LIMIT BREAKER ULTRA INSTINCT LOADED 🔥⚡")
-print("🌟 FEATURES: Sign/Mastered modes, Instant Transmission, Prediction")
-print("💫 Shockwaves, Enhanced afterimages, Energy system")
-print("🚀 5x speed in Mastered, 3.5x in Sign")
-print("✨ Dodge before contact + push enemies back")
-print("👑 THE ULTIMATE ULTRA INSTINCT!")
+print("🌟 MAXIMUM POWER MODE ACTIVATED!")
+print("💨 MASTERED: 8x speed | SIGN: 5x speed")
+print("💥 Enhanced shockwaves (400 knockback)")
+print("✨ 20 lightning bolts per dodge")
+print("🌀 5 spinning energy rings")
+print("⚡ Bigger aura, faster afterimages")
+print("👑 THE ABSOLUTE ULTIMATE ULTRA INSTINCT!")
