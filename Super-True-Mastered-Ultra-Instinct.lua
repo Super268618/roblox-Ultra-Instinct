@@ -1,4 +1,4 @@
--- LIMIT BREAKER ULTRA INSTINCT - ABSOLUTE MAXIMUM POWER
+-- LIMIT BREAKER ULTRA INSTINCT - ABSOLUTE MAXIMUM POWER --
 -- Sign Omen + Mastered UI modes, Instant Transmission, Shockwaves, Clone Spam, and MORE!
 -- Place in StarterPlayer → StarterPlayerScripts
 
@@ -25,9 +25,11 @@ local AFTERIMAGE_INTERVAL = 0.05
 local PREDICTION_RANGE = 12 -- Dodge before they touch you
 local SHOCKWAVE_ENABLED = true
 local INSTANT_TRANSMISSION = true
+local AUTO_COUNTER_ENABLED = true -- Added setting for OMEN counter
 
 -- Connections
 local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, PredictionConnection, CounterConnection
+
 local dodgeCount = 0
 local lastAfterimage = 0
 local uiEnergy = 0
@@ -129,6 +131,7 @@ ModeToggle.Font = Enum.Font.Gotham
 ModeToggle.Text = "Switch Mode"
 ModeToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 ModeToggle.TextSize = 12
+
 local ModeToggleCorner = Instance.new("UICorner")
 ModeToggleCorner.CornerRadius = UDim.new(0, 6)
 ModeToggleCorner.Parent = ModeToggle
@@ -245,7 +248,6 @@ WarningLabel.Parent = WarningFrame
 
 -- LIMIT BREAKER AURA (ENHANCED)
 local auraObjects = {}
-
 local function destroyAura()
 	for _, obj in pairs(auraObjects) do
 		if obj and obj.Parent then
@@ -562,7 +564,9 @@ local function startLimitBreakerUI()
 	if PredictionConnection then PredictionConnection:Disconnect() end
 	
 	-- Speed boost based on mode
-	local speedMultiplier
+	local speedMultiplier 
+	local SPEED_BOOST_OMEN = 8.0 -- OMEN boost setting (was missing)
+	
 	if UI_MODE == "OMEN" then
 		speedMultiplier = SPEED_BOOST_OMEN
 	elseif UI_MODE == "MASTERED" then
@@ -695,7 +699,10 @@ local function startLimitBreakerUI()
 			HeaderCover.BackgroundColor3 = headerColor
 		end
 		
-		if velocityMagnitude < 50 then
+		-- FIX APPLIED HERE: Only update lastPosition if the player is not actively moving.
+		-- This prevents the saved position from conflicting with normal walking CFrame updates,
+		-- which caused the continuous teleporting/stuttering.
+		if Humanoid.MoveDirection.Magnitude == 0 and velocityMagnitude < 10 then
 			lastPosition = RootPart.Position
 		end
 	end)
@@ -789,7 +796,7 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 print("⚡🔥👑 BEYOND LIMITS ULTRA INSTINCT LOADED 👑🔥⚡")
-print("💫 3 MODES: SIGN (6x), MASTERED (10x), OMEN (15x!)")
+print("💫 3 MODES: SIGN (3.5x), MASTERED (5.0x), OMEN (8.0x!)")
 print("💥 Auto-counter in OMEN mode (2x damage)")
 print("✨ Up to 30 lightning bolts, 16 particles")
 print("🌀 8 spinning rings in OMEN mode")
