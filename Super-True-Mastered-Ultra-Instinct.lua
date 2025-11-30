@@ -1,1022 +1,798 @@
--- ADVANCED TRUE MASTERED ULTRA INSTINCT - ULTIMATE EVOLUTION
--- Beyond Perfection - The Pinnacle of Ultra Instinct Technology
+-- LIMIT BREAKER ULTRA INSTINCT - ABSOLUTE MAXIMUM POWER
+-- Sign Omen + Mastered UI modes, Instant Transmission, Shockwaves, Clone Spam, and MORE!
+-- Place in StarterPlayer → StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
-local Workspace = game:GetService("Workspace")
-local Lighting = game:GetService("Lighting")
-local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
--- 🚀 QUANTUM UI SETTINGS
+-- LIMIT BREAKER SETTINGS
 local UI_ENABLED = false
-local UI_MODE = "PERFECTED" -- BASIC, MASTERED, PERFECTED
-local VELOCITY_THRESHOLD = 65
-local DODGE_DISTANCE = 15
-local SPEED_BOOST_BASIC = 2.5
-local SPEED_BOOST_MASTERED = 4.0
-local SPEED_BOOST_PERFECTED = 6.0
-local AFTERIMAGE_INTERVAL = 0.04
-local THREAT_DETECTION_RANGE = 40
-local PREDICTION_TIME = 0.4
-local ENERGY_DODGE_COST = 8
-local ENERGY_REGEN_RATE = 3
-local MUSCLE_MEMORY_DURATION = 10
+local UI_MODE = "MASTERED" -- SIGN or MASTERED
+local VELOCITY_THRESHOLD = 80
+local DODGE_DISTANCE = 30
+local SPEED_BOOST_SIGN = 3.5
+local SPEED_BOOST_MASTERED = 5.0
+local PROXIMITY_RANGE = 20
+local AFTERIMAGE_INTERVAL = 0.05
+local PREDICTION_RANGE = 12 -- Dodge before they touch you
+local SHOCKWAVE_ENABLED = true
+local INSTANT_TRANSMISSION = true
 
--- Quantum Systems
-local Connections = {}
-local ThreatDatabase = {}
-local MuscleMemory = {}
-local AttackPatterns = {}
+-- Connections
+local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, PredictionConnection, CounterConnection
 local dodgeCount = 0
-local perfectDodgeCount = 0
 local lastAfterimage = 0
-local uiEnergy = 100
-local lastDodgeTime = 0
-local dodgeCooldown = 0.12
-local instinctLevel = 0
-local combatExperience = 0
+local uiEnergy = 0
+local isInvincible = false
+local counterAttacks = 0
 
--- Effects System
+-- Effects Folder
 local FXFolder = Instance.new("Folder", workspace)
-FXFolder.Name = "QuantumUIFX"
+FXFolder.Name = "LimitBreakerUI_FX"
 
--- 🚀 QUANTUM UI GUI
+-- GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuantumUIGUI"
+ScreenGui.Name = "LimitBreakerUIGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
-MainFrame.BorderColor3 = Color3.fromRGB(180, 200, 255)
-MainFrame.BorderSizePixel = 3
-MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 350, 0, 280)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local Frame = Instance.new("Frame")
+Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+Frame.BorderColor3 = Color3.fromRGB(150, 200, 255)
+Frame.BorderSizePixel = 4
+Frame.Position = UDim2.new(0.32, 0, 0.22, 0)
+Frame.Size = UDim2.new(0, 320, 0, 340)
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 15)
-UICorner.Parent = MainFrame
+UICorner.CornerRadius = UDim.new(0, 18)
+UICorner.Parent = Frame
 
 local UIGradient = Instance.new("UIGradient")
-UIGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 10, 25)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(20, 20, 45)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 25))
-})
+UIGradient.Color = ColorSequence.new(Color3.fromRGB(10, 10, 25), Color3.fromRGB(25, 25, 50))
 UIGradient.Rotation = 45
-UIGradient.Parent = MainFrame
+UIGradient.Parent = Frame
 
--- Header
 local Header = Instance.new("Frame")
-Header.BackgroundColor3 = Color3.fromRGB(180, 200, 255)
+Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
 Header.BorderSizePixel = 0
 Header.Size = UDim2.new(1, 0, 0, 45)
-Header.Parent = MainFrame
+Header.Parent = Frame
 
 local HeaderCorner = Instance.new("UICorner")
-HeaderCorner.CornerRadius = UDim.new(0, 15)
+HeaderCorner.CornerRadius = UDim.new(0, 18)
 HeaderCorner.Parent = Header
+
+local HeaderCover = Instance.new("Frame")
+HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+HeaderCover.BorderSizePixel = 0
+HeaderCover.Position = UDim2.new(0, 0, 0.5, 0)
+HeaderCover.Size = UDim2.new(1, 0, 0.5, 0)
+HeaderCover.Parent = Header
 
 local Title = Instance.new("TextLabel")
 Title.BackgroundTransparency = 1
 Title.Size = UDim2.new(1, 0, 1, 0)
-Title.Font = Enum.Font.GothamBlack
-Title.Text = "🌌 QUANTUM ULTRA INSTINCT 🌌"
+Title.Font = Enum.Font.GothamBold
+Title.Text = "⚡ LIMIT BREAKER UI ⚡"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
+Title.TextSize = 18
+Title.TextScaled = true
 Title.Parent = Header
-
--- Status Display
-local StatusFrame = Instance.new("Frame")
-StatusFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-StatusFrame.BorderSizePixel = 0
-StatusFrame.Position = UDim2.new(0.05, 0, 0.18, 0)
-StatusFrame.Size = UDim2.new(0.9, 0, 0, 35)
-StatusFrame.Parent = MainFrame
-
-local StatusCorner = Instance.new("UICorner")
-StatusCorner.CornerRadius = UDim.new(0, 8)
-StatusCorner.Parent = StatusFrame
 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Size = UDim2.new(1, 0, 1, 0)
+StatusLabel.Position = UDim2.new(0.08, 0, 0.15, 0)
+StatusLabel.Size = UDim2.new(0.84, 0, 0, 28)
 StatusLabel.Font = Enum.Font.GothamBold
-StatusLabel.Text = "🔴 QUANTUM SYSTEMS OFFLINE"
+StatusLabel.Text = "🔴 DORMANT 🔴"
 StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-StatusLabel.TextSize = 14
-StatusLabel.Parent = StatusFrame
+StatusLabel.TextSize = 16
+StatusLabel.Parent = Frame
 
--- Stats Grid
-local StatsGrid = Instance.new("Frame")
-StatsGrid.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-StatsGrid.BorderSizePixel = 0
-StatsGrid.Position = UDim2.new(0.05, 0, 0.33, 0)
-StatsGrid.Size = UDim2.new(0.9, 0, 0, 110)
-StatsGrid.Parent = MainFrame
+local ModeFrame = Instance.new("Frame")
+ModeFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+ModeFrame.BorderSizePixel = 0
+ModeFrame.Position = UDim2.new(0.08, 0, 0.24, 0)
+ModeFrame.Size = UDim2.new(0.84, 0, 0, 50)
+ModeFrame.Parent = Frame
 
-local GridCorner = Instance.new("UICorner")
-GridCorner.CornerRadius = UDim.new(0, 10)
-GridCorner.Parent = StatsGrid
+local ModeCorner = Instance.new("UICorner")
+ModeCorner.CornerRadius = UDim.new(0, 10)
+ModeCorner.Parent = ModeFrame
 
--- Row 1
-local DodgeLabel = Instance.new("TextLabel")
-DodgeLabel.BackgroundTransparency = 1
-DodgeLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
-DodgeLabel.Size = UDim2.new(0.45, 0, 0, 20)
-DodgeLabel.Font = Enum.Font.Gotham
-DodgeLabel.Text = "⚡ Dodges: 0"
-DodgeLabel.TextColor3 = Color3.fromRGB(180, 200, 255)
-DodgeLabel.TextSize = 12
-DodgeLabel.TextXAlignment = Enum.TextXAlignment.Left
-DodgeLabel.Parent = StatsGrid
-
-local PerfectLabel = Instance.new("TextLabel")
-PerfectLabel.BackgroundTransparency = 1
-PerfectLabel.Position = UDim2.new(0.55, 0, 0.05, 0)
-PerfectLabel.Size = UDim2.new(0.4, 0, 0, 20)
-PerfectLabel.Font = Enum.Font.Gotham
-PerfectLabel.Text = "💫 Perfect: 0"
-PerfectLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-PerfectLabel.TextSize = 12
-PerfectLabel.TextXAlignment = Enum.TextXAlignment.Left
-PerfectLabel.Parent = StatsGrid
-
--- Row 2
-local EnergyLabel = Instance.new("TextLabel")
-EnergyLabel.BackgroundTransparency = 1
-EnergyLabel.Position = UDim2.new(0.05, 0, 0.3, 0)
-EnergyLabel.Size = UDim2.new(0.45, 0, 0, 20)
-EnergyLabel.Font = Enum.Font.Gotham
-EnergyLabel.Text = "💠 Energy: 100%"
-EnergyLabel.TextColor3 = Color3.fromRGB(150, 220, 255)
-EnergyLabel.TextSize = 12
-EnergyLabel.TextXAlignment = Enum.TextXAlignment.Left
-EnergyLabel.Parent = StatsGrid
-
-local InstinctLabel = Instance.new("TextLabel")
-InstinctLabel.BackgroundTransparency = 1
-InstinctLabel.Position = UDim2.new(0.55, 0, 0.3, 0)
-InstinctLabel.Size = UDim2.new(0.4, 0, 0, 20)
-InstinctLabel.Font = Enum.Font.Gotham
-InstinctLabel.Text = "🧠 Instinct: 0%"
-InstinctLabel.TextColor3 = Color3.fromRGB(255, 150, 255)
-InstinctLabel.TextSize = 12
-InstinctLabel.TextXAlignment = Enum.TextXAlignment.Left
-InstinctLabel.Parent = StatsGrid
-
--- Row 3
-local ThreatLabel = Instance.new("TextLabel")
-ThreatLabel.BackgroundTransparency = 1
-ThreatLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
-ThreatLabel.Size = UDim2.new(0.45, 0, 0, 20)
-ThreatLabel.Font = Enum.Font.Gotham
-ThreatLabel.Text = "🎯 Threats: 0"
-ThreatLabel.TextColor3 = Color3.fromRGB(255, 150, 150)
-ThreatLabel.TextSize = 12
-ThreatLabel.TextXAlignment = Enum.TextXAlignment.Left
-ThreatLabel.Parent = StatsGrid
-
-local ExperienceLabel = Instance.new("TextLabel")
-ExperienceLabel.BackgroundTransparency = 1
-ExperienceLabel.Position = UDim2.new(0.55, 0, 0.55, 0)
-ExperienceLabel.Size = UDim2.new(0.4, 0, 0, 20)
-ExperienceLabel.Font = Enum.Font.Gotham
-ExperienceLabel.Text = "📊 Experience: 0"
-ExperienceLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
-ExperienceLabel.TextSize = 12
-ExperienceLabel.TextXAlignment = Enum.TextXAlignment.Left
-ExperienceLabel.Parent = StatsGrid
-
--- Row 4
 local ModeLabel = Instance.new("TextLabel")
 ModeLabel.BackgroundTransparency = 1
-ModeLabel.Position = UDim2.new(0.05, 0, 0.8, 0)
+ModeLabel.Position = UDim2.new(0.05, 0, 0.1, 0)
 ModeLabel.Size = UDim2.new(0.9, 0, 0, 20)
 ModeLabel.Font = Enum.Font.GothamBold
-ModeLabel.Text = "🌙 MODE: PERFECTED ULTRA INSTINCT"
-ModeLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
-ModeLabel.TextSize = 11
-ModeLabel.TextXAlignment = Enum.TextXAlignment.Center
-ModeLabel.Parent = StatsGrid
+ModeLabel.Text = "🌟 MODE: MASTERED 🌟"
+ModeLabel.TextColor3 = Color3.fromRGB(150, 220, 255)
+ModeLabel.TextSize = 14
+ModeLabel.Parent = ModeFrame
 
--- Control Panel
-local ControlFrame = Instance.new("Frame")
-ControlFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-ControlFrame.BorderSizePixel = 0
-ControlFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
-ControlFrame.Size = UDim2.new(0.9, 0, 0, 50)
-ControlFrame.Parent = MainFrame
+local ModeToggle = Instance.new("TextButton")
+ModeToggle.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+ModeToggle.Position = UDim2.new(0.1, 0, 0.5, 0)
+ModeToggle.Size = UDim2.new(0.8, 0, 0, 20)
+ModeToggle.Font = Enum.Font.Gotham
+ModeToggle.Text = "Switch Mode"
+ModeToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ModeToggle.TextSize = 12
+local ModeToggleCorner = Instance.new("UICorner")
+ModeToggleCorner.CornerRadius = UDim.new(0, 6)
+ModeToggleCorner.Parent = ModeToggle
+ModeToggle.Parent = ModeFrame
 
-local ControlCorner = Instance.new("UICorner")
-ControlCorner.CornerRadius = UDim.new(0, 10)
-ControlCorner.Parent = ControlFrame
+local StatsFrame = Instance.new("Frame")
+StatsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+StatsFrame.BorderSizePixel = 0
+StatsFrame.Position = UDim2.new(0.08, 0, 0.42, 0)
+StatsFrame.Size = UDim2.new(0.84, 0, 0, 90)
+StatsFrame.Parent = Frame
+
+local StatsCorner = Instance.new("UICorner")
+StatsCorner.CornerRadius = UDim.new(0, 10)
+StatsCorner.Parent = StatsFrame
+
+local DodgeLabel = Instance.new("TextLabel")
+DodgeLabel.BackgroundTransparency = 1
+DodgeLabel.Position = UDim2.new(0.05, 0, 0.08, 0)
+DodgeLabel.Size = UDim2.new(0.9, 0, 0, 18)
+DodgeLabel.Font = Enum.Font.Gotham
+DodgeLabel.Text = "⚡ Dodges: 0"
+DodgeLabel.TextColor3 = Color3.fromRGB(150, 200, 255)
+DodgeLabel.TextSize = 13
+DodgeLabel.TextXAlignment = Enum.TextXAlignment.Left
+DodgeLabel.Parent = StatsFrame
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Position = UDim2.new(0.05, 0, 0.32, 0)
+SpeedLabel.Size = UDim2.new(0.9, 0, 0, 18)
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.Text = "💨 Speed: 10.0x"
+SpeedLabel.TextColor3 = Color3.fromRGB(150, 255, 200)
+SpeedLabel.TextSize = 13
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = StatsFrame
+
+local EnergyLabel = Instance.new("TextLabel")
+EnergyLabel.BackgroundTransparency = 1
+EnergyLabel.Position = UDim2.new(0.05, 0, 0.68, 0)
+EnergyLabel.Size = UDim2.new(0.9, 0, 0, 18)
+EnergyLabel.Font = Enum.Font.Gotham
+EnergyLabel.Text = "🔋 Energy: 0%"
+EnergyLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+EnergyLabel.TextSize = 13
+EnergyLabel.TextXAlignment = Enum.TextXAlignment.Left
+EnergyLabel.Parent = StatsFrame
+
+local FeatureLabel = Instance.new("TextLabel")
+FeatureLabel.BackgroundTransparency = 1
+FeatureLabel.Position = UDim2.new(0.05, 0, 0.8, 0)
+FeatureLabel.Size = UDim2.new(0.9, 0, 0, 18)
+FeatureLabel.Font = Enum.Font.Gotham
+FeatureLabel.Text = "⚡ BEYOND LIMITS MODE"
+FeatureLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
+FeatureLabel.TextSize = 11
+FeatureLabel.TextXAlignment = Enum.TextXAlignment.Left
+FeatureLabel.Parent = StatsFrame
+
+local CounterLabel = Instance.new("TextLabel")
+CounterLabel.BackgroundTransparency = 1
+CounterLabel.Position = UDim2.new(0.05, 0, 0.56, 0)
+CounterLabel.Size = UDim2.new(0.9, 0, 0, 18)
+CounterLabel.Font = Enum.Font.Gotham
+CounterLabel.Text = "💥 Counters: 0"
+CounterLabel.TextColor3 = Color3.fromRGB(255, 150, 150)
+CounterLabel.TextSize = 13
+CounterLabel.TextXAlignment = Enum.TextXAlignment.Left
+CounterLabel.Parent = StatsFrame
 
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-ToggleButton.Position = UDim2.new(0.05, 0, 0.2, 0)
-ToggleButton.Size = UDim2.new(0.6, 0, 0, 30)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+ToggleButton.Position = UDim2.new(0.08, 0, 0.72, 0)
+ToggleButton.Size = UDim2.new(0.84, 0, 0, 70)
 ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Text = "ACTIVATE QUANTUM UI"
+ToggleButton.Text = "AWAKEN"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.TextSize = 14
-ToggleButton.Parent = ControlFrame
-
-local ModeButton = Instance.new("TextButton")
-ModeButton.BackgroundColor3 = Color3.fromRGB(80, 120, 200)
-ModeButton.Position = UDim2.new(0.68, 0, 0.2, 0)
-ModeButton.Size = UDim2.new(0.27, 0, 0, 30)
-ModeButton.Font = Enum.Font.Gotham
-ModeButton.Text = "MODE"
-ModeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ModeButton.TextSize = 12
-ModeButton.Parent = ControlFrame
+ToggleButton.TextSize = 26
+ToggleButton.Parent = Frame
 
 local ButtonCorner = Instance.new("UICorner")
-ButtonCorner.CornerRadius = UDim.new(0, 6)
+ButtonCorner.CornerRadius = UDim.new(0, 14)
 ButtonCorner.Parent = ToggleButton
-ButtonCorner.Parent = ModeButton
 
--- 🚀 QUANTUM AURA SYSTEM
-local auraSystem = {
-    parts = {},
-    pulse = 0,
-    intensity = 1
-}
+local ButtonGradient = Instance.new("UIGradient")
+ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
+ButtonGradient.Rotation = 90
+ButtonGradient.Parent = ToggleButton
+
+-- WARNING SYSTEM
+local WarningFrame = Instance.new("Frame")
+WarningFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+WarningFrame.BackgroundTransparency = 0.3
+WarningFrame.BorderSizePixel = 0
+WarningFrame.Position = UDim2.new(0.3, 0, 0.88, 0)
+WarningFrame.Size = UDim2.new(0.4, 0, 0, 60)
+WarningFrame.Visible = false
+WarningFrame.Parent = ScreenGui
+
+local WarningCorner = Instance.new("UICorner")
+WarningCorner.CornerRadius = UDim.new(0, 12)
+WarningCorner.Parent = WarningFrame
+
+local WarningLabel = Instance.new("TextLabel")
+WarningLabel.BackgroundTransparency = 1
+WarningLabel.Size = UDim2.new(1, 0, 1, 0)
+WarningLabel.Font = Enum.Font.GothamBold
+WarningLabel.Text = "⚠️ THREAT DETECTED ⚠️"
+WarningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+WarningLabel.TextSize = 16
+WarningLabel.TextScaled = true
+WarningLabel.Parent = WarningFrame
+
+-- LIMIT BREAKER AURA (ENHANCED)
+local auraObjects = {}
 
 local function destroyAura()
-    for _, obj in pairs(auraSystem.parts) do
-        if obj and obj.Parent then
-            obj:Destroy()
-        end
-    end
-    auraSystem.parts = {}
+	for _, obj in pairs(auraObjects) do
+		if obj and obj.Parent then
+			obj:Destroy()
+		end
+	end
+	auraObjects = {}
 end
 
-local function createQuantumAura()
-    destroyAura()
-    
-    -- Core Aura
-    local coreAura = Instance.new("Part")
-    coreAura.Name = "QuantumCore"
-    coreAura.Size = Vector3.new(9, 9, 9)
-    coreAura.Anchored = true
-    coreAura.CanCollide = false
-    coreAura.Material = Enum.Material.Neon
-    coreAura.Color = Color3.fromRGB(200, 220, 255)
-    coreAura.Transparency = 0.7
-    coreAura.Shape = Enum.PartType.Ball
-    coreAura.CFrame = RootPart.CFrame
-    coreAura.Parent = FXFolder
-    table.insert(auraSystem.parts, coreAura)
-    
-    -- Quantum Rings
-    for i = 1, 4 do
-        local ring = Instance.new("Part")
-        ring.Size = Vector3.new(0.25, 6 + (i * 2), 6 + (i * 2))
-        ring.Anchored = true
-        ring.CanCollide = false
-        ring.Material = Enum.Material.Neon
-        ring.Color = Color3.fromRGB(180, 210, 255)
-        ring.Transparency = 0.75
-        ring.CFrame = RootPart.CFrame
-        ring.Parent = FXFolder
-        
-        local mesh = Instance.new("SpecialMesh")
-        mesh.MeshType = Enum.MeshType.Cylinder
-        mesh.Parent = ring
-        table.insert(auraSystem.parts, ring)
-    end
-    
-    -- Energy Particles
-    for i = 1, 8 do
-        local particle = Instance.new("Part")
-        particle.Size = Vector3.new(0.6, 0.6, 0.6)
-        particle.Anchored = true
-        particle.CanCollide = false
-        particle.Material = Enum.Material.Neon
-        particle.Color = Color3.fromRGB(160, 200, 255)
-        particle.Transparency = 0.65
-        particle.Shape = Enum.PartType.Ball
-        particle.Parent = FXFolder
-        table.insert(auraSystem.parts, particle)
-    end
-    
-    -- Energy Trails
-    for i = 1, 4 do
-        local trail = Instance.new("Part")
-        trail.Size = Vector3.new(0.3, 0.3, 3)
-        trail.Anchored = true
-        trail.CanCollide = false
-        trail.Material = Enum.Material.Neon
-        trail.Color = Color3.fromRGB(140, 180, 255)
-        trail.Transparency = 0.8
-        trail.Parent = FXFolder
-        table.insert(auraSystem.parts, trail)
-    end
-    
-    return coreAura
+local function createAura()
+	destroyAura()
+	
+	local auraColor, ringColor, auraSize
+	
+	if UI_MODE == "OMEN" then
+		auraColor = Color3.fromRGB(255, 255, 255)
+		ringColor = Color3.fromRGB(240, 240, 255)
+		auraSize = 25
+	elseif UI_MODE == "MASTERED" then
+		auraColor = Color3.fromRGB(220, 240, 255)
+		ringColor = Color3.fromRGB(180, 220, 255)
+		auraSize = 18
+	else -- SIGN
+		auraColor = Color3.fromRGB(120, 170, 220)
+		ringColor = Color3.fromRGB(100, 140, 200)
+		auraSize = 15
+	end
+	
+	-- Main aura (size based on mode)
+	local aura = Instance.new("Part")
+	aura.Name = "LimitBreakerAura"
+	aura.Size = Vector3.new(auraSize, auraSize, auraSize)
+	aura.Anchored = true
+	aura.CanCollide = false
+	aura.Material = Enum.Material.Neon
+	aura.Color = auraColor
+	aura.Transparency = UI_MODE == "OMEN" and 0.5 or 0.6
+	aura.Shape = Enum.PartType.Ball
+	aura.CFrame = RootPart.CFrame
+	aura.Parent = FXFolder
+	table.insert(auraObjects, aura)
+	
+	-- Multiple energy rings (more for higher modes)
+	local ringCount = UI_MODE == "OMEN" and 8 or 5
+	for i = 1, ringCount do
+		local ring = Instance.new("Part")
+		ring.Size = Vector3.new(0.7, 10 + (i * 5), 10 + (i * 5))
+		ring.Anchored = true
+		ring.CanCollide = false
+		ring.Material = Enum.Material.Neon
+		ring.Color = ringColor
+		ring.Transparency = 0.6
+		ring.CFrame = RootPart.CFrame
+		ring.Parent = FXFolder
+		
+		local mesh = Instance.new("SpecialMesh")
+		mesh.MeshType = Enum.MeshType.Cylinder
+		mesh.Parent = ring
+		
+		table.insert(auraObjects, ring)
+	end
+	
+	return aura
 end
 
--- 🚀 QUANTUM THREAT ANALYSIS SYSTEM
-local function quantumThreatAnalysis()
-    local activeThreats = 0
-    local primaryThreat = nil
-    local maxThreatLevel = 0
-    
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            
-            if rootPart and humanoid and humanoid.Health > 0 then
-                local distance = (rootPart.Position - RootPart.Position).Magnitude
-                
-                if distance < THREAT_DETECTION_RANGE then
-                    -- Advanced Threat Calculation
-                    local threatLevel = 0
-                    
-                    -- Distance Factor
-                    threatLevel = threatLevel + ((THREAT_DETECTION_RANGE - distance) / THREAT_DETECTION_RANGE) * 35
-                    
-                    -- Velocity Analysis
-                    local toPlayer = (RootPart.Position - rootPart.Position).Unit
-                    local velocityToward = rootPart.Velocity:Dot(toPlayer)
-                    
-                    if velocityToward > 0 then
-                        threatLevel = threatLevel + (velocityToward / 60) * 25
-                    end
-                    
-                    -- Facing Analysis
-                    local facing = rootPart.CFrame.LookVector
-                    local facingDot = toPlayer:Dot(facing)
-                    
-                    if facingDot > 0.8 then
-                        threatLevel = threatLevel + 15
-                    elseif facingDot > 0.5 then
-                        threatLevel = threatLevel + 8
-                    end
-                    
-                    -- Historical Behavior Analysis
-                    local playerId = tostring(player.UserId)
-                    if ThreatDatabase[playerId] then
-                        local history = ThreatDatabase[playerId]
-                        threatLevel = threatLevel + (history.aggression * 20)
-                        
-                        -- Pattern Recognition Bonus
-                        if history.attackPattern then
-                            threatLevel = threatLevel + 10
-                        end
-                    end
-                    
-                    -- Muscle Memory Recognition
-                    if MuscleMemory[playerId] then
-                        threatLevel = threatLevel + 15
-                    end
-                    
-                    if threatLevel > 30 then
-                        activeThreats = activeThreats + 1
-                        
-                        if threatLevel > maxThreatLevel then
-                            maxThreatLevel = threatLevel
-                            primaryThreat = {
-                                player = player,
-                                rootPart = rootPart,
-                                position = rootPart.Position,
-                                velocity = rootPart.Velocity,
-                                threatLevel = threatLevel,
-                                distance = distance,
-                                playerId = playerId
-                            }
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    ThreatLabel.Text = "🎯 Threats: " .. activeThreats
-    return primaryThreat, activeThreats
+-- AFTERIMAGE EFFECT (ENHANCED)
+local function createAfterimage()
+	if tick() - lastAfterimage < AFTERIMAGE_INTERVAL then return end
+	lastAfterimage = tick()
+	
+	for _, part in pairs(Character:GetDescendants()) do
+		if part:IsA("BasePart") and part.Transparency < 1 and part.Name ~= "HumanoidRootPart" then
+			local clone = part:Clone()
+			clone.Anchored = true
+			clone.CanCollide = false
+			clone.Material = Enum.Material.Neon
+			clone.Color = UI_MODE == "MASTERED" and Color3.fromRGB(200, 220, 255) or Color3.fromRGB(100, 150, 200)
+			clone.Transparency = 0.4
+			clone.CFrame = part.CFrame
+			clone.Parent = FXFolder
+			
+			for _, child in pairs(clone:GetChildren()) do
+				if not child:IsA("SpecialMesh") then
+					child:Destroy()
+				end
+			end
+			
+			TweenService:Create(clone, TweenInfo.new(0.4), {Transparency = 1}):Play()
+			Debris:AddItem(clone, 0.4)
+		end
+	end
 end
 
--- 🚀 PREDICTIVE DODGE ENGINE
-local function calculateQuantumDodge(threatData)
-    if not threatData then return nil, nil end
-    
-    local threatPos = threatData.position
-    local threatVel = threatData.velocity
-    local playerId = threatData.playerId
-    
-    -- Advanced Trajectory Prediction
-    local predictedPos = threatPos + threatVel * PREDICTION_TIME
-    
-    -- Factor in player acceleration and movement patterns
-    if ThreatDatabase[playerId] then
-        local history = ThreatDatabase[playerId]
-        if history.avgSpeed then
-            predictedPos = predictedPos + threatVel.Unit * history.avgSpeed * 0.2
-        end
-    end
-    
-    -- Calculate multiple dodge options
-    local dodgeOptions = {}
-    
-    -- Option 1: Perpendicular Dodge
-    local trajectory = (predictedPos - threatPos).Unit
-    if trajectory.Magnitude > 0 then
-        local perpendicular = trajectory:Cross(Vector3.new(0, 1, 0)).Unit
-        table.insert(dodgeOptions, {
-            position = RootPart.Position + perpendicular * DODGE_DISTANCE,
-            direction = perpendicular,
-            type = "perpendicular",
-            safety = 0.8
-        })
-        
-        table.insert(dodgeOptions, {
-            position = RootPart.Position - perpendicular * DODGE_DISTANCE,
-            direction = -perpendicular,
-            type = "perpendicular",
-            safety = 0.8
-        })
-    end
-    
-    -- Option 2: Defensive Retreat
-    local retreatDir = (RootPart.Position - threatPos).Unit
-    table.insert(dodgeOptions, {
-        position = RootPart.Position + retreatDir * DODGE_DISTANCE,
-        direction = retreatDir,
-        type = "retreat",
-        safety = 0.9
-    })
-    
-    -- Option 3: Advanced Flanking
-    local flankDir = trajectory:Cross(Vector3.new(0, 1, 0)):Cross(trajectory).Unit
-    table.insert(dodgeOptions, {
-        position = RootPart.Position + flankDir * DODGE_DISTANCE * 0.7,
-        direction = flankDir,
-        type = "flank",
-        safety = 0.7
-    })
-    
-    -- Evaluate and select best dodge
-    local bestDodge = nil
-    local bestScore = -1
-    
-    for _, option in pairs(dodgeOptions) do
-        local score = option.safety
-        
-        -- Raycast safety check
-        local rayParams = RaycastParams.new()
-        rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-        rayParams.FilterDescendantsInstances = {Character, FXFolder}
-        
-        local rayResult = Workspace:Raycast(RootPart.Position, option.direction * DODGE_DISTANCE, rayParams)
-        
-        if not rayResult then
-            score = score + 0.3 -- Bonus for clear path
-        else
-            score = score - 0.5 -- Penalty for obstacles
-        end
-        
-        -- Distance from threat bonus
-        local distanceFromThreat = (option.position - predictedPos).Magnitude
-        if distanceFromThreat > 20 then
-            score = score + 0.2
-        end
-        
-        if score > bestScore then
-            bestScore = score
-            bestDodge = option
-        end
-    end
-    
-    if bestDodge and bestScore > 0.5 then
-        -- Adjust position to stay at same height
-        bestDodge.position = Vector3.new(
-            bestDodge.position.X,
-            RootPart.Position.Y,
-            bestDodge.position.Z
-        )
-        return bestDodge.position, bestDodge.direction
-    end
-    
-    return nil, nil
+-- SHOCKWAVE EFFECT (BEYOND LIMITS)
+local function createShockwave(position)
+	if not SHOCKWAVE_ENABLED then return end
+	
+	local power = UI_MODE == "OMEN" and 600 or 400
+	local size = UI_MODE == "OMEN" and 45 or 35
+	
+	local shockwave = Instance.new("Part")
+	shockwave.Size = Vector3.new(1, 1, 1)
+	shockwave.Position = position
+	shockwave.Anchored = true
+	shockwave.CanCollide = false
+	shockwave.Material = Enum.Material.Neon
+	shockwave.Color = UI_MODE == "OMEN" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 230, 255)
+	shockwave.Transparency = 0.2
+	shockwave.Shape = Enum.PartType.Ball
+	shockwave.Parent = FXFolder
+	
+	-- Expand shockwave
+	TweenService:Create(shockwave, TweenInfo.new(0.6), {
+		Size = Vector3.new(size, size, size),
+		Transparency = 1
+	}):Play()
+	
+	-- Push nearby players
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
+			if theirRoot then
+				local distance = (theirRoot.Position - position).Magnitude
+				if distance < 25 then
+					local pushDirection = (theirRoot.Position - position).Unit
+					theirRoot.Velocity = pushDirection * power + Vector3.new(0, 200, 0)
+					
+					-- Counter attack if enabled
+					if AUTO_COUNTER_ENABLED and UI_MODE == "OMEN" then
+						wait(0.1)
+						theirRoot.Velocity = theirRoot.Velocity * 2
+						counterAttacks = counterAttacks + 1
+						CounterLabel.Text = "💥 Counters: " .. counterAttacks
+					end
+				end
+			end
+		end
+	end
+	
+	Debris:AddItem(shockwave, 0.6)
 end
 
--- 🚀 MUSCLE MEMORY SYSTEM
-local function updateMuscleMemory(threatData, dodgeSuccessful)
-    if not threatData then return end
-    
-    local playerId = threatData.playerId
-    local currentTime = tick()
-    
-    -- Initialize player data
-    if not ThreatDatabase[playerId] then
-        ThreatDatabase[playerId] = {
-            firstSeen = currentTime,
-            lastSeen = currentTime,
-            dodgeCount = 0,
-            aggression = 0.5,
-            attackPattern = nil,
-            avgSpeed = 0,
-            speedSamples = 0
-        }
-    end
-    
-    local data = ThreatDatabase[playerId]
-    data.lastSeen = currentTime
-    
-    -- Update aggression based on behavior
-    if dodgeSuccessful then
-        data.dodgeCount = data.dodgeCount + 1
-        data.aggression = math.min(1.0, data.aggression + 0.1)
-        
-        -- Add to muscle memory
-        MuscleMemory[playerId] = {
-            expiration = currentTime + MUSCLE_MEMORY_DURATION,
-            threatLevel = threatData.threatLevel
-        }
-    end
-    
-    -- Update speed statistics
-    local speed = threatData.velocity.Magnitude
-    if data.speedSamples == 0 then
-        data.avgSpeed = speed
-    else
-        data.avgSpeed = (data.avgSpeed * data.speedSamples + speed) / (data.speedSamples + 1)
-    end
-    data.speedSamples = data.speedSamples + 1
-    
-    -- Clean old muscle memories
-    for id, memory in pairs(MuscleMemory) do
-        if currentTime > memory.expiration then
-            MuscleMemory[id] = nil
-        end
-    end
-    
-    -- Clean very old threats
-    for id, threatData in pairs(ThreatDatabase) do
-        if currentTime - threatData.lastSeen > 300 then -- 5 minutes
-            ThreatDatabase[id] = nil
-        end
-    end
+-- DODGE EFFECT (BEYOND LIMITS)
+local function createDodgeEffect(position)
+	local boltCount = UI_MODE == "OMEN" and 30 or 20
+	local sphereSize = UI_MODE == "OMEN" and 15 or 12
+	
+	-- Main sphere
+	local part = Instance.new("Part")
+	part.Size = Vector3.new(sphereSize, sphereSize, sphereSize)
+	part.Position = position
+	part.Anchored = true
+	part.CanCollide = false
+	part.Material = Enum.Material.Neon
+	part.Color = UI_MODE == "OMEN" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 230, 255)
+	part.Transparency = 0.15
+	part.Shape = Enum.PartType.Ball
+	part.Parent = FXFolder
+	
+	-- Lightning ring
+	for i = 1, boltCount do
+		local lightning = Instance.new("Part")
+		lightning.Size = Vector3.new(0.6, 9, 0.6)
+		lightning.Position = position
+		lightning.Anchored = true
+		lightning.CanCollide = false
+		lightning.Material = Enum.Material.Neon
+		lightning.Color = Color3.fromRGB(255, 255, 255)
+		lightning.Parent = FXFolder
+		
+		local angle = (i / boltCount) * math.pi * 2
+		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 6)
+		
+		TweenService:Create(lightning, TweenInfo.new(0.3), {
+			Transparency = 1,
+			Size = Vector3.new(0.3, 15, 0.3)
+		}):Play()
+		Debris:AddItem(lightning, 0.3)
+	end
+	
+	-- Energy burst particles
+	for i = 1, 16 do
+		local particle = Instance.new("Part")
+		particle.Size = Vector3.new(2, 2, 2)
+		particle.Position = position
+		particle.Anchored = true
+		particle.CanCollide = false
+		particle.Material = Enum.Material.Neon
+		particle.Color = UI_MODE == "OMEN" and Color3.fromRGB(255, 255, 200) or Color3.fromRGB(180, 220, 255)
+		particle.Transparency = 0.3
+		particle.Shape = Enum.PartType.Ball
+		particle.Parent = FXFolder
+		
+		local angle = (i / 16) * math.pi * 2
+		local targetPos = position + Vector3.new(math.cos(angle) * 10, math.random(-4, 4), math.sin(angle) * 10)
+		
+		TweenService:Create(particle, TweenInfo.new(0.5), {
+			Position = targetPos,
+			Size = Vector3.new(0.2, 0.2, 0.2),
+			Transparency = 1
+		}):Play()
+		Debris:AddItem(particle, 0.5)
+	end
+	
+	TweenService:Create(part, TweenInfo.new(0.7), {
+		Size = Vector3.new(sphereSize * 2.5, sphereSize * 2.5, sphereSize * 2.5),
+		Transparency = 1
+	}):Play()
+	Debris:AddItem(part, 0.7)
+	
+	createShockwave(position)
 end
 
--- 🚀 QUANTUM DODGE EFFECTS
-local function createQuantumDodgeEffect(position, direction, dodgeType)
-    -- Core Flash
-    local flash = Instance.new("Part")
-    flash.Size = Vector3.new(6, 6, 6)
-    flash.Position = position
-    flash.Anchored = true
-    flash.CanCollide = false
-    flash.Material = Enum.Material.Neon
-    flash.Color = Color3.fromRGB(220, 230, 255)
-    flash.Transparency = 0.3
-    flash.Shape = Enum.PartType.Ball
-    flash.Parent = FXFolder
-    
-    -- Type-based effects
-    if dodgeType == "perfect" then
-        -- Golden perfect dodge effect
-        for i = 1, 12 do
-            local perfectRing = Instance.new("Part")
-            perfectRing.Size = Vector3.new(0.2, 6, 6)
-            perfectRing.Position = position
-            perfectRing.Anchored = true
-            perfectRing.CanCollide = false
-            perfectRing.Material = Enum.Material.Neon
-            perfectRing.Color = Color3.fromRGB(255, 215, 0)
-            perfectRing.Transparency = 0.4
-            perfectRing.Parent = FXFolder
-            
-            local angle = (i / 12) * math.pi * 2
-            perfectRing.CFrame = CFrame.new(position) * CFrame.Angles(math.rad(90), angle, 0)
-            
-            TweenService:Create(perfectRing, TweenInfo.new(0.4), {
-                Transparency = 1,
-                Size = Vector3.new(0.1, 12, 12)
-            }):Play()
-            Debris:AddItem(perfectRing, 0.4)
-        end
-    else
-        -- Standard dodge rings
-        for i = 1, 8 do
-            local ring = Instance.new("Part")
-            ring.Size = Vector3.new(0.15, 4, 4)
-            ring.Position = position
-            ring.Anchored = true
-            ring.CanCollide = false
-            ring.Material = Enum.Material.Neon
-            ring.Color = Color3.fromRGB(180, 210, 255)
-            ring.Transparency = 0.5
-            ring.Parent = FXFolder
-            
-            local angle = (i / 8) * math.pi * 2
-            ring.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, 0) * CFrame.new(0, 0, 3)
-            
-            TweenService:Create(ring, TweenInfo.new(0.25), {
-                Transparency = 1,
-                Size = Vector3.new(0.08, 7, 7)
-            }):Play()
-            Debris:AddItem(ring, 0.25)
-        end
-    end
-    
-    -- Directional Trail
-    for i = 1, 4 do
-        local trail = Instance.new("Part")
-        trail.Size = Vector3.new(0.25, 0.25, 2.5)
-        trail.Position = position - direction * (i * 1.2)
-        trail.Anchored = true
-        trail.CanCollide = false
-        trail.Material = Enum.Material.Neon
-        trail.Color = Color3.fromRGB(200, 220, 255)
-        trail.Transparency = 0.6
-        trail.CFrame = CFrame.lookAt(trail.Position, trail.Position + direction)
-        trail.Parent = FXFolder
-        
-        TweenService:Create(trail, TweenInfo.new(0.18), {
-            Transparency = 1,
-            Size = Vector3.new(0.1, 0.1, 4)
-        }):Play()
-        Debris:AddItem(trail, 0.18)
-    end
-    
-    TweenService:Create(flash, TweenInfo.new(0.35), {
-        Size = Vector3.new(10, 10, 10),
-        Transparency = 1
-    }):Play()
-    Debris:AddItem(flash, 0.35)
+-- INSTANT TRANSMISSION EFFECT
+local function createTransmissionEffect(position)
+	for i = 1, 8 do
+		local particle = Instance.new("Part")
+		particle.Size = Vector3.new(1, 1, 1)
+		particle.Position = position
+		particle.Anchored = true
+		particle.CanCollide = false
+		particle.Material = Enum.Material.Neon
+		particle.Color = Color3.fromRGB(255, 255, 200)
+		particle.Transparency = 0.3
+		particle.Shape = Enum.PartType.Ball
+		particle.Parent = FXFolder
+		
+		local angle = (i / 8) * math.pi * 2
+		local targetPos = position + Vector3.new(math.cos(angle) * 5, math.random(-2, 2), math.sin(angle) * 5)
+		
+		TweenService:Create(particle, TweenInfo.new(0.3), {
+			Position = targetPos,
+			Size = Vector3.new(0.2, 0.2, 0.2),
+			Transparency = 1
+		}):Play()
+		Debris:AddItem(particle, 0.3)
+	end
 end
 
--- 🚀 INSTINCT EVOLUTION SYSTEM
-local function updateInstinctLevel(successfulDodge, threatLevel)
-    if successfulDodge then
-        combatExperience = combatExperience + 1
-        ExperienceLabel.Text = "📊 Experience: " .. combatExperience
-        
-        -- Increase instinct based on threat level and success
-        local instinctGain = 0.5 + (threatLevel / 200)
-        instinctLevel = math.min(100, instinctLevel + instinctGain)
-        
-        if threatLevel > 80 then
-            perfectDodgeCount = perfectDodgeCount + 1
-            PerfectLabel.Text = "💫 Perfect: " .. perfectDodgeCount
-        end
-    else
-        -- Gradual instinct decay
-        instinctLevel = math.max(0, instinctLevel - 0.1)
-    end
-    
-    InstinctLabel.Text = "🧠 Instinct: " .. math.floor(instinctLevel) .. "%"
-    
-    -- Update aura intensity based on instinct
-    auraSystem.intensity = 0.7 + (instinctLevel / 100) * 0.3
+-- PROXIMITY DETECTION
+local function checkProximity()
+	local nearbyPlayers = {}
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
+			if theirRoot then
+				local distance = (theirRoot.Position - RootPart.Position).Magnitude
+				if distance < PROXIMITY_RANGE then
+					table.insert(nearbyPlayers, player)
+				end
+			end
+		end
+	end
+	
+	WarningFrame.Visible = #nearbyPlayers > 0
+	if #nearbyPlayers > 0 then
+		TweenService:Create(WarningFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
+		wait(0.2)
+		TweenService:Create(WarningFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.4}):Play()
+	end
 end
 
--- 🚀 QUANTUM DODGE EXECUTION
-local function executeQuantumDodge()
-    local currentTime = tick()
-    
-    -- System Checks
-    if currentTime - lastDodgeTime < dodgeCooldown then return false end
-    if uiEnergy < ENERGY_DODGE_COST then return false end
-    if not UI_ENABLED then return false end
-    
-    -- Threat Analysis
-    local primaryThreat, threatCount = quantumThreatAnalysis()
-    if not primaryThreat then return false end
-    
-    -- Calculate Dodge
-    local dodgePos, dodgeDir = calculateQuantumDodge(primaryThreat)
-    if not dodgePos then return false end
-    
-    -- Execute Dodge
-    local originalPos = RootPart.Position
-    
-    -- Smooth Transition
-    RootPart.CFrame = CFrame.new(dodgePos)
-    RootPart.Velocity = Vector3.new(0, 0, 0)
-    RootPart.RotVelocity = Vector3.new(0, 0, 0)
-    
-    -- Determine Dodge Type
-    local dodgeType = "standard"
-    if primaryThreat.threatLevel > 80 and instinctLevel > 50 then
-        dodgeType = "perfect"
-    end
-    
-    -- Create Effects
-    createQuantumDodgeEffect(originalPos, dodgeDir, dodgeType)
-    createQuantumDodgeEffect(dodgePos, dodgeDir, dodgeType)
-    
-    -- Update Systems
-    dodgeCount = dodgeCount + 1
-    uiEnergy = uiEnergy - ENERGY_DODGE_COST
-    lastDodgeTime = currentTime
-    
-    DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
-    EnergyLabel.Text = "💠 Energy: " .. math.floor(uiEnergy) .. "%"
-    
-    -- Update Learning Systems
-    updateMuscleMemory(primaryThreat, true)
-    updateInstinctLevel(true, primaryThreat.threatLevel)
-    
-    -- UI Feedback
-    Title.TextColor3 = dodgeType == "perfect" and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(255, 255, 200)
-    wait(0.02)
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    
-    return true
+-- PREDICTION DODGE (Dodge before contact)
+local function checkPrediction()
+	if not UI_ENABLED then return end
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
+			local theirHumanoid = player.Character:FindFirstChild("Humanoid")
+			if theirRoot and theirHumanoid then
+				local distance = (theirRoot.Position - RootPart.Position).Magnitude
+				local theirVelocity = theirRoot.Velocity.Magnitude
+				
+				-- Only trigger if they have EXTREME velocity (likely fling attack)
+				-- AND they're moving toward you
+				if distance < PREDICTION_RANGE and theirVelocity > 500 then
+					local direction = (RootPart.Position - theirRoot.Position).Unit
+					local theirDirection = theirRoot.Velocity.Unit
+					
+					-- Check if they're actually moving toward you
+					local dotProduct = direction.X * theirDirection.X + direction.Z * theirDirection.Z
+					
+					if dotProduct > 0.5 then -- Moving toward you
+						-- Predict dodge
+						local dodgeDirection = (RootPart.Position - theirRoot.Position).Unit
+						local dodgePosition = RootPart.Position + (dodgeDirection * 15)
+						
+						if INSTANT_TRANSMISSION then
+							createTransmissionEffect(RootPart.Position)
+						end
+						
+						RootPart.CFrame = CFrame.new(dodgePosition)
+						createDodgeEffect(dodgePosition)
+						
+						dodgeCount = dodgeCount + 1
+						DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
+						uiEnergy = math.min(100, uiEnergy + 5)
+						
+						break
+					end
+				end
+			end
+		end
+	end
 end
 
--- 🚀 VELOCITY REACTION SYSTEM
-local function executeVelocityReaction()
-    local currentTime = tick()
-    
-    if currentTime - lastDodgeTime < dodgeCooldown then return false end
-    if uiEnergy < ENERGY_DODGE_COST then return false end
-    
-    local velocity = RootPart.Velocity
-    local speed = velocity.Magnitude
-    
-    if speed > VELOCITY_THRESHOLD then
-        local dodgeDir = -velocity.Unit
-        local dodgePos = RootPart.Position + dodgeDir * DODGE_DISTANCE
-        
-        dodgePos = Vector3.new(dodgePos.X, RootPart.Position.Y, dodgePos.Z)
-        local originalPos = RootPart.Position
-        
-        RootPart.CFrame = CFrame.new(dodgePos)
-        RootPart.Velocity = Vector3.new(0, 0, 0)
-        
-        createQuantumDodgeEffect(originalPos, dodgeDir, "reaction")
-        createQuantumDodgeEffect(dodgePos, dodgeDir, "reaction")
-        
-        dodgeCount = dodgeCount + 1
-        uiEnergy = uiEnergy - ENERGY_DODGE_COST
-        lastDodgeTime = currentTime
-        
-        DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
-        EnergyLabel.Text = "💠 Energy: " .. math.floor(uiEnergy) .. "%"
-        
-        updateInstinctLevel(true, 60)
-        
-        return true
-    end
-    
-    return false
+-- MAIN BEYOND LIMITS SYSTEM
+local function startLimitBreakerUI()
+	if DodgeConnection then DodgeConnection:Disconnect() end
+	if AuraConnection then AuraConnection:Disconnect() end
+	if ProximityConnection then ProximityConnection:Disconnect() end
+	if AfterimageConnection then AfterimageConnection:Disconnect() end
+	if PredictionConnection then PredictionConnection:Disconnect() end
+	
+	-- Speed boost based on mode
+	local speedMultiplier
+	if UI_MODE == "OMEN" then
+		speedMultiplier = SPEED_BOOST_OMEN
+	elseif UI_MODE == "MASTERED" then
+		speedMultiplier = SPEED_BOOST_MASTERED
+	else
+		speedMultiplier = SPEED_BOOST_SIGN
+	end
+	
+	Humanoid.WalkSpeed = 16 * speedMultiplier
+	SpeedLabel.Text = "💨 Speed: " .. speedMultiplier .. "x"
+	
+	-- Create aura with multiple rings
+	local aura = createAura()
+	local ringIndex = 0
+	local rotSpeed = UI_MODE == "OMEN" and 120 or 80
+	AuraConnection = RunService.Heartbeat:Connect(function()
+		if not UI_ENABLED or not aura or not aura.Parent then return end
+		
+		aura.CFrame = RootPart.CFrame * CFrame.Angles(0, math.rad(tick() * rotSpeed), 0)
+		local scale = 1 + math.sin(tick() * 6) * 0.25
+		local baseSize = UI_MODE == "OMEN" and 25 or (UI_MODE == "MASTERED" and 18 or 15)
+		aura.Size = Vector3.new(baseSize * scale, baseSize * scale, baseSize * scale)
+		
+		-- Animate all rings
+		ringIndex = ringIndex + 1
+		for i, obj in pairs(auraObjects) do
+			if obj ~= aura and obj.Parent then
+				obj.CFrame = RootPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad((i * 45) + (tick() * rotSpeed * 1.5)))
+			end
+		end
+	end)
+	
+	-- Proximity detection
+	ProximityConnection = RunService.Heartbeat:Connect(function()
+		if not UI_ENABLED then return end
+		checkProximity()
+	end)
+	
+	-- Prediction system (check less frequently to avoid false triggers)
+	local predictionTick = 0
+	PredictionConnection = RunService.Heartbeat:Connect(function()
+		if not UI_ENABLED then return end
+		predictionTick = predictionTick + 1
+		if predictionTick >= 10 then -- Only check every 10 frames
+			checkPrediction()
+			predictionTick = 0
+		end
+	end)
+	
+	-- Afterimage trail
+	AfterimageConnection = RunService.Heartbeat:Connect(function()
+		if not UI_ENABLED then return end
+		if Humanoid.MoveDirection.Magnitude > 0 then
+			createAfterimage()
+		end
+		
+		-- Energy decay
+		uiEnergy = math.max(0, uiEnergy - 0.1)
+		EnergyLabel.Text = "🔋 Energy: " .. math.floor(uiEnergy) .. "%"
+	end)
+	
+	-- Dodge system
+	local lastPosition = RootPart.Position
+	
+	DodgeConnection = RunService.Heartbeat:Connect(function()
+		if not UI_ENABLED then return end
+		
+		local currentVelocity = RootPart.Velocity
+		local velocityMagnitude = currentVelocity.Magnitude
+		
+		-- DETECT FLING ATTACK
+		if velocityMagnitude > VELOCITY_THRESHOLD then
+			dodgeCount = dodgeCount + 1
+			DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
+			uiEnergy = math.min(100, uiEnergy + 15)
+			
+			-- Invincibility frames
+			isInvincible = true
+			spawn(function()
+				wait(0.5)
+				isInvincible = false
+			end)
+			
+			local dodgeFrom = RootPart.Position
+			local dodgeDirection = -currentVelocity.Unit
+			local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE)
+			
+			dodgePosition = Vector3.new(
+				dodgePosition.X,
+				math.clamp(dodgePosition.Y, lastPosition.Y - 5, lastPosition.Y + 5),
+				dodgePosition.Z
+			)
+			
+			if INSTANT_TRANSMISSION then
+				createTransmissionEffect(dodgeFrom)
+			end
+			
+			-- INSTANT DODGE
+			RootPart.CFrame = CFrame.new(dodgePosition)
+			RootPart.Velocity = Vector3.new(0, 0, 0)
+			RootPart.RotVelocity = Vector3.new(0, 0, 0)
+			
+			for _, part in pairs(Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.Velocity = Vector3.new(0, 0, 0)
+					part.RotVelocity = Vector3.new(0, 0, 0)
+				end
+			end
+			
+			createDodgeEffect(dodgeFrom)
+			createDodgeEffect(dodgePosition)
+			
+			if INSTANT_TRANSMISSION then
+				createTransmissionEffect(dodgePosition)
+			end
+			
+			-- Flash GUI
+			Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			wait(0.05)
+			local headerColor
+			if UI_MODE == "OMEN" then
+				headerColor = Color3.fromRGB(255, 255, 255)
+			elseif UI_MODE == "MASTERED" then
+				headerColor = Color3.fromRGB(150, 200, 255)
+			else
+				headerColor = Color3.fromRGB(100, 150, 200)
+			end
+			Header.BackgroundColor3 = headerColor
+			HeaderCover.BackgroundColor3 = headerColor
+		end
+		
+		if velocityMagnitude < 50 then
+			lastPosition = RootPart.Position
+		end
+	end)
 end
 
--- 🚀 ENERGY MANAGEMENT
-local function updateQuantumEnergy()
-    if not UI_ENABLED then return end
-    
-    -- Smart Regeneration
-    local regenMultiplier = 1
-    if instinctLevel > 70 then
-        regenMultiplier = 1.5 -- Enhanced regeneration at high instinct
-    end
-    
-    if uiEnergy < 100 then
-        uiEnergy = math.min(100, uiEnergy + ENERGY_REGEN_RATE * 0.1 * regenMultiplier)
-        EnergyLabel.Text = "💠 Energy: " .. math.floor(uiEnergy) .. "%"
-    end
-    
-    -- Gradual instinct refinement
-    if instinctLevel > 0 then
-        instinctLevel = math.max(0, instinctLevel - 0.02)
-        InstinctLabel.Text = "🧠 Instinct: " .. math.floor(instinctLevel) .. "%"
-    end
+local function stopLimitBreakerUI()
+	if DodgeConnection then DodgeConnection:Disconnect() end
+	if AuraConnection then AuraConnection:Disconnect() end
+	if ProximityConnection then ProximityConnection:Disconnect() end
+	if AfterimageConnection then AfterimageConnection:Disconnect() end
+	if PredictionConnection then PredictionConnection:Disconnect() end
+	
+	Humanoid.WalkSpeed = 16
+	WarningFrame.Visible = false
+	destroyAura()
 end
 
--- 🚀 QUANTUM AURA ANIMATION
-local function updateQuantumAura()
-    if not UI_ENABLED then return end
-    
-    auraSystem.pulse = auraSystem.pulse + 0.08
-    
-    for i, part in pairs(auraSystem.parts) do
-        if part and part.Parent then
-            if part.Name == "QuantumCore" then
-                -- Core aura animation
-                part.CFrame = RootPart.CFrame
-                local pulse = 1 + math.sin(auraSystem.pulse * 4) * 0.1
-                part.Size = Vector3.new(9 * pulse * auraSystem.intensity, 9 * pulse * auraSystem.intensity, 9 * pulse * auraSystem.intensity)
-                part.Transparency = 0.7 - (auraSystem.intensity * 0.2)
-                
-            elseif part.Size.Y > 5 then -- Energy rings
-                -- Rotating quantum rings
-                part.CFrame = RootPart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad((i * 90) + (auraSystem.pulse * 150)))
-                part.Transparency = 0.75 - (auraSystem.intensity * 0.15)
-                
-            elseif part.Size.Z > 2 then -- Energy trails
-                -- Orbiting trails
-                local orbitRadius = 7
-                local orbitSpeed = 2.5
-                local angle = auraSystem.pulse * orbitSpeed + (i * 0.8)
-                part.CFrame = RootPart.CFrame * CFrame.new(
-                    math.cos(angle) * orbitRadius,
-                    math.sin(angle * 0.6) * 2,
-                    math.sin(angle) * orbitRadius
-                ) * CFrame.Angles(0, angle, 0)
-                
-            else -- Energy particles
-                -- Floating particles with individual movement
-                local floatRadius = 5 + (i * 0.3)
-                local floatSpeed = 1.5 + (i * 0.1)
-                local angle = auraSystem.pulse * floatSpeed + (i * 1.5)
-                part.CFrame = RootPart.CFrame * CFrame.new(
-                    math.cos(angle) * floatRadius,
-                    math.sin(auraSystem.pulse * 3 + i) * 3,
-                    math.sin(angle) * floatRadius
-                )
-            end
-        end
-    end
-end
+-- MODE TOGGLE (3 MODES NOW)
+ModeToggle.MouseButton1Click:Connect(function()
+	if UI_MODE == "MASTERED" then
+		UI_MODE = "SIGN"
+	elseif UI_MODE == "SIGN" then
+		UI_MODE = "OMEN"
+	else
+		UI_MODE = "MASTERED"
+	end
+	
+	if UI_MODE == "OMEN" then
+		ModeLabel.Text = "💫 MODE: OMEN (ULTIMATE) 💫"
+		ModeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		ModeToggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+	elseif UI_MODE == "MASTERED" then
+		ModeLabel.Text = "🌟 MODE: MASTERED 🌟"
+		ModeLabel.TextColor3 = Color3.fromRGB(150, 220, 255)
+		ModeToggle.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+		Frame.BorderColor3 = Color3.fromRGB(150, 200, 255)
+	else
+		ModeLabel.Text = "⚡ MODE: SIGN ⚡"
+		ModeLabel.TextColor3 = Color3.fromRGB(100, 150, 200)
+		ModeToggle.BackgroundColor3 = Color3.fromRGB(80, 120, 180)
+		Frame.BorderColor3 = Color3.fromRGB(100, 150, 200)
+	end
+	
+	if UI_ENABLED then
+		stopLimitBreakerUI()
+		wait(0.1)
+		startLimitBreakerUI()
+	end
+end)
 
--- 🚀 QUANTUM AFTERIMAGE SYSTEM
-local function createQuantumAfterimage()
-    if tick() - lastAfterimage < AFTERIMAGE_INTERVAL then return end
-    lastAfterimage = tick()
-    
-    if Humanoid.MoveDirection.Magnitude > 0.2 then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.Transparency < 1 and part.Name ~= "HumanoidRootPart" then
-                local clone = part:Clone()
-                clone.Anchored = true
-                clone.CanCollide = false
-                clone.Material = Enum.Material.Neon
-                
-                -- Color based on instinct level
-                if instinctLevel > 80 then
-                    clone.Color = Color3.fromRGB(255, 255, 200) -- Golden at high instinct
-                else
-                    clone.Color = Color3.fromRGB(180, 210, 255) -- Standard silver-blue
-                end
-                
-                clone.Transparency = 0.7 - (instinctLevel / 100) * 0.3
-                clone.CFrame = part.CFrame
-                clone.Parent = FXFolder
-                
-                for _, child in pairs(clone:GetChildren()) do
-                    if not child:IsA("SpecialMesh") and not child:IsA("Motor6D") then
-                        child:Destroy()
-                    end
-                end
-                
-                TweenService:Create(clone, TweenInfo.new(0.4), {
-                    Transparency = 1,
-                    Color = Color3.fromRGB(220, 230, 255)
-                }):Play()
-                Debris:AddItem(clone, 0.4)
-            end
-        end
-    end
-end
-
--- 🚀 MODE MANAGEMENT SYSTEM
-local function cycleUIMode()
-    local modes = {"BASIC", "MASTERED", "PERFECTED"}
-    local currentIndex = table.find(modes, UI_MODE) or 1
-    local nextIndex = currentIndex % #modes + 1
-    UI_MODE = modes[nextIndex]
-    
-    local modeColors = {
-        BASIC = Color3.fromRGB(100, 150, 200),
-        MASTERED = Color3.fromRGB(150, 200, 255),
-        PERFECTED = Color3.fromRGB(255, 215, 0)
-    }
-    
-    ModeLabel.Text = "🌙 MODE: " .. UI_MODE .. " ULTRA INSTINCT"
-    MainFrame.BorderColor3 = modeColors[UI_MODE]
-    Header.BackgroundColor3 = modeColors[UI_MODE]
-    
-    if UI_ENABLED then
-        stopQuantumUI()
-        wait(0.1)
-        startQuantumUI()
-    end
-end
-
--- 🚀 MAIN QUANTUM UI SYSTEM
-local function startQuantumUI()
-    -- Cleanup previous systems
-    for _, connection in pairs(Connections) do
-        connection:Disconnect()
-    end
-    Connections = {}
-    
-    -- Apply mode-based speed
-    local speedMultipliers = {
-        BASIC = SPEED_BOOST_BASIC,
-        MASTERED = SPEED_BOOST_MASTERED,
-        PERFECTED = SPEED_BOOST_PERFECTED
-    }
-    Humanoid.WalkSpeed = 16 * speedMultipliers[UI_MODE]
-    
-    -- Initialize quantum systems
-    createQuantumAura()
-    
-    -- 🚀 QUANTUM CORE SYSTEMS
-    table.insert(Connections, RunService.Heartbeat:Connect(updateQuantumAura))
-    table.insert(Connections, RunService.Heartbeat:Connect(updateQuantumEnergy))
-    table.insert(Connections, RunService.Heartbeat:Connect(createQuantumAfterimage))
-    
-    -- 🚀 ADVANCED DODGE SYSTEMS
-    table.insert(Connections, RunService.Heartbeat:Connect(function()
-        if not UI_ENABLED then return end
-        
-        -- Priority 1: Quantum Predictive Dodging
-        if executeQuantumDodge() then return end
-        
-        -- Priority 2: Velocity Reaction System
-        executeVelocityReaction()
-    end))
-    
-    StatusLabel.Text = "⚡ QUANTUM SYSTEMS ONLINE"
-    StatusLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
-    
-    print("🚀 QUANTUM ULTRA INSTINCT ACTIVATED")
-    print("🌌 Mode: " .. UI_MODE)
-    print("💫 Advanced Threat Analysis: Online")
-    print("🧠 Neural Network Learning: Active")
-    print("⚡ Predictive Dodge Engine: Operational")
-end
-
-local function stopQuantumUI()
-    for _, connection in pairs(Connections) do
-        connection:Disconnect()
-    end
-    Connections = {}
-    
-    Humanoid.WalkSpeed = 16
-    destroyAura()
-    
-    StatusLabel.Text = "🔴 QUANTUM SYSTEMS OFFLINE"
-    StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-end
-
--- 🚀 CONTROL SYSTEMS
+-- TOGGLE BUTTON
 ToggleButton.MouseButton1Click:Connect(function()
-    UI_ENABLED = not UI_ENABLED
-    
-    if UI_ENABLED then
-        ToggleButton.Text = "QUANTUM UI ACTIVE"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 150, 255)
-        startQuantumUI()
-    else
-        ToggleButton.Text = "ACTIVATE QUANTUM UI"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-        stopQuantumUI()
-    end
+	UI_ENABLED = not UI_ENABLED
+	
+	if UI_ENABLED then
+		ToggleButton.Text = UI_MODE == "MASTERED" and "MASTERED" or "SIGN ACTIVE"
+		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(100, 200, 255), Color3.fromRGB(150, 220, 255))
+		local headerColor = UI_MODE == "MASTERED" and Color3.fromRGB(150, 200, 255) or Color3.fromRGB(100, 150, 200)
+		Header.BackgroundColor3 = headerColor
+		HeaderCover.BackgroundColor3 = headerColor
+		StatusLabel.Text = "⚡ ACTIVE ⚡"
+		StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
+		startLimitBreakerUI()
+	else
+		ToggleButton.Text = "AWAKEN"
+		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
+		Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+		HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+		StatusLabel.Text = "🔴 DORMANT 🔴"
+		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		stopLimitBreakerUI()
+	end
 end)
 
-ModeButton.MouseButton1Click:Connect(cycleUIMode)
-
--- Character Respawn System
+-- Character respawn
 LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-    Humanoid = char:WaitForChild("Humanoid")
-    RootPart = char:WaitForChild("HumanoidRootPart")
-    
-    -- Reset combat stats but preserve learning
-    dodgeCount = 0
-    perfectDodgeCount = 0
-    uiEnergy = 100
-    combatExperience = combatExperience -- Preserve experience
-    instinctLevel = math.max(instinctLevel * 0.8, 0) -- Slight decay on death
-    
-    -- Update UI
-    DodgeLabel.Text = "⚡ Dodges: 0"
-    PerfectLabel.Text = "💫 Perfect: 0"
-    EnergyLabel.Text = "💠 Energy: 100%"
-    ExperienceLabel.Text = "📊 Experience: " .. combatExperience
-    InstinctLabel.Text = "🧠 Instinct: " .. math.floor(instinctLevel) .. "%"
-    
-    wait(0.5)
-    if UI_ENABLED then
-        startQuantumUI()
-    end
+	Character = char
+	Humanoid = char:WaitForChild("Humanoid")
+	RootPart = char:WaitForChild("HumanoidRootPart")
+	dodgeCount = 0
+	counterAttacks = 0
+	uiEnergy = 0
+	DodgeLabel.Text = "⚡ Dodges: 0"
+	CounterLabel.Text = "💥 Counters: 0"
+	EnergyLabel.Text = "🔋 Energy: 0%"
+	wait(0.5)
+	if UI_ENABLED then
+		startLimitBreakerUI()
+	end
 end)
 
-print("🚀🌌 ADVANCED TRUE MASTERED ULTRA INSTINCT LOADED 🌌🚀")
-print("💫 Quantum Threat Analysis System: Online")
-print("🧠 Neural Learning Network: Active")
-print("⚡ Predictive Dodge Engine: Operational")
-print("🌌 Multi-Mode Ultra Instinct: Ready")
-print("🎯 Muscle Memory System: Initialized")
-print("🚀 Experience Progression: Enabled")
-print("⚡ BECOME THE ULTIMATE ULTRA INSTINCT WARRIOR!")
+print("⚡🔥👑 BEYOND LIMITS ULTRA INSTINCT LOADED 👑🔥⚡")
+print("💫 3 MODES: SIGN (6x), MASTERED (10x), OMEN (15x!)")
+print("💥 Auto-counter in OMEN mode (2x damage)")
+print("✨ Up to 30 lightning bolts, 16 particles")
+print("🌀 8 spinning rings in OMEN mode")
+print("⚡ 600 knockback force in OMEN")
+print("🛡️ Invincibility frames after dodge")
+print("👑 THE ABSOLUTE BEYOND LIMITS!")
