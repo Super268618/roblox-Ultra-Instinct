@@ -1,6 +1,4 @@
--- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE
--- Multiple modes with ultimate Superskksksjsjsj transformation
--- Place in StarterPlayer → StarterPlayerScripts
+-- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE -- Multiple modes with ultimate Superskksksjsjsj transformation -- Place in StarterPlayer → StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -16,28 +14,46 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 -- MODE SETTINGS
 local UI_ENABLED = false
 local CURRENT_MODE = "MASTERED" -- MASTERED, PERFECTION, SUPERSKKSKSJSJSJ
-local VELOCITY_THRESHOLD = 100
+
+-- PERFECTED SETTINGS FOR SUPERSKKSKSJSJSJ MODE
+local VELOCITY_THRESHOLD = {
+    MASTERED = 150,
+    PERFECTION = 200,
+    SUPERSKKSKSJSJSJ = 80  -- LOWER threshold for instant detection of flings!
+}
+
 local DODGE_DISTANCE = {
-	MASTERED = 25,
-	PERFECTION = 35,
-	SUPERSKKSKSJSJSJ = 50
+    MASTERED = 25,
+    PERFECTION = 35,
+    SUPERSKKSKSJSJSJ = 100  -- MUCH longer dodge distance
 }
+
 local SPEED_BOOST = {
-	MASTERED = 2.5,
-	PERFECTION = 5.0,
-	SUPERSKKSKSJSJSJ = 10.0
+    MASTERED = 2.5,
+    PERFECTION = 5.0,
+    SUPERSKKSKSJSJSJ = 15.0  -- Increased to 15x for truly overpowered speed
 }
+
 local PROXIMITY_RANGE = 15
+
 local AFTERIMAGE_INTERVAL = {
-	MASTERED = 0.08,
-	PERFECTION = 0.05,
-	SUPERSKKSKSJSJSJ = 0.02
+    MASTERED = 0.08,
+    PERFECTION = 0.05,
+    SUPERSKKSKSJSJSJ = 0.01  -- Instant afterimages
+}
+
+-- NEW: Anti-Fling Protection Settings
+local ANTI_FLING_FORCE = {
+    MASTERED = 1000,
+    PERFECTION = 2000,
+    SUPERSKKSKSJSJSJ = 10000  -- Insane anti-fling force
 }
 
 -- Connections
-local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, ModeEffectConnection
+local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, ModeEffectConnection, AntiFlingConnection
 local dodgeCount = 0
 local lastAfterimage = 0
+local antiFlingActive = false
 
 -- Effects Folder
 local FXFolder = Instance.new("Folder", workspace)
@@ -158,7 +174,7 @@ SuperBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
 SuperBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
 SuperBtn.Size = UDim2.new(0.9, 0, 0, 20)
 SuperBtn.Font = Enum.Font.GothamBold
-SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ (10.0x)"
+SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ (15.0x)"
 SuperBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SuperBtn.TextSize = 10
 local SuperCorner = Instance.new("UICorner")
@@ -252,356 +268,494 @@ WarningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 WarningLabel.TextSize = 18
 WarningLabel.Parent = WarningFrame
 
+-- NEW: ANTI-FLING SHIELD (Only for SUPERSKKSKSJSJSJ)
+local function createAntiFlingShield()
+    if CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return end
+    
+    local shield = Instance.new("Part")
+    shield.Name = "AntiFlingShield"
+    shield.Size = Vector3.new(25, 25, 25)
+    shield.Position = RootPart.Position
+    shield.Anchored = true
+    shield.CanCollide = false
+    shield.Material = Enum.Material.Neon
+    shield.Color = Color3.fromHSV(tick() % 1, 1, 1)
+    shield.Transparency = 0.3
+    shield.Shape = Enum.PartType.Ball
+    shield.Parent = FXFolder
+    
+    local mesh = Instance.new("SpecialMesh")
+    mesh.MeshType = Enum.MeshType.Sphere
+    mesh.Scale = Vector3.new(1, 1, 1)
+    mesh.Parent = shield
+    
+    return shield
+end
+
+-- ULTIMATE ANTI-FLING SYSTEM (OP VERSION)
+local function applyAntiFlingForce()
+    if not antiFlingActive or CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return end
+    
+    -- Counter all external forces with INSANE force
+    for _, part in pairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            local currentVel = part.Velocity
+            if currentVel.Magnitude > 50 then -- Only counter high velocity
+                -- Reverse the velocity with 10x force
+                local counterForce = -currentVel.Unit * ANTI_FLING_FORCE[CURRENT_MODE]
+                part:ApplyImpulse(counterForce)
+                
+                -- Add random stabilization for extra OP effect
+                part:ApplyImpulse(Vector3.new(
+                    math.random(-100, 100),
+                    math.random(50, 200),
+                    math.random(-100, 100)
+                ))
+            end
+        end
+    end
+end
+
 -- AURA CREATION
 local function createAura()
-	local auraSize, auraColor
-	
-	if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-		auraSize = 15
-		auraColor = Color3.fromHSV(tick() % 1, 1, 1) -- Rainbow
-	elseif CURRENT_MODE == "PERFECTION" then
-		auraSize = 12
-		auraColor = Color3.fromRGB(255, 200, 255)
-	else
-		auraSize = 8
-		auraColor = Color3.fromRGB(200, 200, 255)
-	end
-	
-	local aura = Instance.new("Part")
-	aura.Name = "UIAura"
-	aura.Size = Vector3.new(auraSize, auraSize, auraSize)
-	aura.Position = RootPart.Position
-	aura.Anchored = true
-	aura.CanCollide = false
-	aura.Material = Enum.Material.Neon
-	aura.Color = auraColor
-	aura.Transparency = 0.7
-	aura.Shape = Enum.PartType.Ball
-	aura.Parent = FXFolder
-	
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere
-	mesh.Scale = Vector3.new(1, 1, 1)
-	mesh.Parent = aura
-	
-	return aura
+    local auraSize, auraColor
+    
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        auraSize = 20  -- Larger aura
+        auraColor = Color3.fromHSV(tick() % 1, 1, 1) -- Rainbow
+    elseif CURRENT_MODE == "PERFECTION" then
+        auraSize = 12
+        auraColor = Color3.fromRGB(255, 200, 255)
+    else
+        auraSize = 8
+        auraColor = Color3.fromRGB(200, 200, 255)
+    end
+    
+    local aura = Instance.new("Part")
+    aura.Name = "UIAura"
+    aura.Size = Vector3.new(auraSize, auraSize, auraSize)
+    aura.Position = RootPart.Position
+    aura.Anchored = true
+    aura.CanCollide = false
+    aura.Material = Enum.Material.Neon
+    aura.Color = auraColor
+    aura.Transparency = 0.7
+    aura.Shape = Enum.PartType.Ball
+    aura.Parent = FXFolder
+    
+    local mesh = Instance.new("SpecialMesh")
+    mesh.MeshType = Enum.MeshType.Sphere
+    mesh.Scale = Vector3.new(1, 1, 1)
+    mesh.Parent = aura
+    
+    return aura
 end
 
 -- AFTERIMAGE EFFECT
 local function createAfterimage()
-	if tick() - lastAfterimage < AFTERIMAGE_INTERVAL[CURRENT_MODE] then return end
-	lastAfterimage = tick()
-	
-	local color
-	if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-		color = Color3.fromHSV(math.random(), 1, 1)
-	elseif CURRENT_MODE == "PERFECTION" then
-		color = Color3.fromRGB(255, 200, 255)
-	else
-		color = Color3.fromRGB(200, 220, 255)
-	end
-	
-	for _, part in pairs(Character:GetDescendants()) do
-		if part:IsA("BasePart") and part.Transparency < 1 and part.Name ~= "HumanoidRootPart" then
-			local clone = part:Clone()
-			clone.Anchored = true
-			clone.CanCollide = false
-			clone.Material = Enum.Material.Neon
-			clone.Color = color
-			clone.Transparency = 0.5
-			clone.CFrame = part.CFrame
-			clone.Parent = FXFolder
-			
-			for _, child in pairs(clone:GetChildren()) do
-				if not child:IsA("SpecialMesh") then
-					child:Destroy()
-				end
-			end
-			
-			TweenService:Create(clone, TweenInfo.new(0.3), {Transparency = 1}):Play()
-			Debris:AddItem(clone, 0.3)
-		end
-	end
+    if tick() - lastAfterimage < AFTERIMAGE_INTERVAL[CURRENT_MODE] then return end
+    lastAfterimage = tick()
+    
+    local color
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        color = Color3.fromHSV(math.random(), 1, 1)
+    elseif CURRENT_MODE == "PERFECTION" then
+        color = Color3.fromRGB(255, 200, 255)
+    else
+        color = Color3.fromRGB(200, 220, 255)
+    end
+    
+    for _, part in pairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") and part.Transparency < 1 and part.Name ~= "HumanoidRootPart" then
+            local clone = part:Clone()
+            clone.Anchored = true
+            clone.CanCollide = false
+            clone.Material = Enum.Material.Neon
+            clone.Color = color
+            clone.Transparency = 0.5
+            clone.CFrame = part.CFrame
+            clone.Parent = FXFolder
+            
+            for _, child in pairs(clone:GetChildren()) do
+                if not child:IsA("SpecialMesh") then
+                    child:Destroy()
+                end
+            end
+            
+            TweenService:Create(clone, TweenInfo.new(0.3), {Transparency = 1}):Play()
+            Debris:AddItem(clone, 0.3)
+        end
+    end
 end
 
--- DODGE EFFECT
+-- ULTIMATE DODGE EFFECT (MEGA OP VERSION FOR SUPERSKKSKSJSJSJ)
 local function createDodgeEffect(position)
-	local boltCount, effectSize
-	
-	if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-		boltCount = 20
-		effectSize = 10
-	elseif CURRENT_MODE == "PERFECTION" then
-		boltCount = 12
-		effectSize = 8
-	else
-		boltCount = 8
-		effectSize = 6
-	end
-	
-	local color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or 
-		(CURRENT_MODE == "PERFECTION" and Color3.fromRGB(255, 200, 255) or Color3.fromRGB(150, 200, 255))
-	
-	local part = Instance.new("Part")
-	part.Size = Vector3.new(effectSize, effectSize, effectSize)
-	part.Position = position
-	part.Anchored = true
-	part.CanCollide = false
-	part.Material = Enum.Material.Neon
-	part.Color = color
-	part.Transparency = 0.2
-	part.Shape = Enum.PartType.Ball
-	part.Parent = FXFolder
-	
-	-- Lightning ring
-	for i = 1, boltCount do
-		local lightning = Instance.new("Part")
-		lightning.Size = Vector3.new(0.3, 4, 0.3)
-		lightning.Position = position
-		lightning.Anchored = true
-		lightning.CanCollide = false
-		lightning.Material = Enum.Material.Neon
-		lightning.Color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV((i/boltCount), 1, 1) or Color3.fromRGB(255, 255, 255)
-		lightning.Parent = FXFolder
-		
-		local angle = (i / boltCount) * math.pi * 2
-		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 3)
-		
-		TweenService:Create(lightning, TweenInfo.new(0.2), {Transparency = 1, Size = Vector3.new(0.1, 6, 0.1)}):Play()
-		Debris:AddItem(lightning, 0.2)
-	end
-	
-	TweenService:Create(part, TweenInfo.new(0.4), {Size = Vector3.new(effectSize * 2, effectSize * 2, effectSize * 2), Transparency = 1}):Play()
-	Debris:AddItem(part, 0.4)
+    local boltCount, effectSize
+    
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        boltCount = 30  -- More bolts
+        effectSize = 15 -- Larger effect
+    elseif CURRENT_MODE == "PERFECTION" then
+        boltCount = 12
+        effectSize = 8
+    else
+        boltCount = 8
+        effectSize = 6
+    end
+    
+    local color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
+        (CURRENT_MODE == "PERFECTION" and Color3.fromRGB(255, 200, 255) or Color3.fromRGB(150, 200, 255))
+    
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(effectSize, effectSize, effectSize)
+    part.Position = position
+    part.Anchored = true
+    part.CanCollide = false
+    part.Material = Enum.Material.Neon
+    part.Color = color
+    part.Transparency = 0.2
+    part.Shape = Enum.PartType.Ball
+    part.Parent = FXFolder
+    
+    -- EPIC Lightning ring
+    for i = 1, boltCount do
+        local lightning = Instance.new("Part")
+        lightning.Size = Vector3.new(0.5, 8, 0.5)  -- Larger lightning
+        lightning.Position = position
+        lightning.Anchored = true
+        lightning.CanCollide = false
+        lightning.Material = Enum.Material.Neon
+        lightning.Color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV((i/boltCount), 1, 1) or Color3.fromRGB(255, 255, 255)
+        lightning.Parent = FXFolder
+        
+        local angle = (i / boltCount) * math.pi * 2
+        lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 5)
+        
+        TweenService:Create(lightning, TweenInfo.new(0.15), {Transparency = 1, Size = Vector3.new(0.2, 12, 0.2)}):Play()
+        Debris:AddItem(lightning, 0.15)
+    end
+    
+    TweenService:Create(part, TweenInfo.new(0.3), {Size = Vector3.new(effectSize * 3, effectSize * 3, effectSize * 3), Transparency = 1}):Play()
+    Debris:AddItem(part, 0.3)
 end
 
 -- PROXIMITY DETECTION
 local function checkProximity()
-	local nearbyPlayers = {}
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character then
-			local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
-			if theirRoot then
-				local distance = (theirRoot.Position - RootPart.Position).Magnitude
-				if distance < PROXIMITY_RANGE then
-					table.insert(nearbyPlayers, player)
-				end
-			end
-		end
-	end
-	
-	WarningFrame.Visible = #nearbyPlayers > 0
-	if #nearbyPlayers > 0 then
-		TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
-		wait(0.3)
-		TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
-	end
+    local nearbyPlayers = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local theirRoot = player.Character:FindFirstChild("HumanoidRootPart")
+            if theirRoot then
+                local distance = (theirRoot.Position - RootPart.Position).Magnitude
+                if distance < PROXIMITY_RANGE then
+                    table.insert(nearbyPlayers, player)
+                end
+            end
+        end
+    end
+    
+    WarningFrame.Visible = #nearbyPlayers > 0
+    if #nearbyPlayers > 0 then
+        TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
+        wait(0.3)
+        TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
+    end
 end
 
--- MAIN DODGE SYSTEM
+-- ULTIMATE DODGE SYSTEM - OP VERSION
 local function startUI()
-	if DodgeConnection then DodgeConnection:Disconnect() end
-	if AuraConnection then AuraConnection:Disconnect() end
-	if ProximityConnection then ProximityConnection:Disconnect() end
-	if AfterimageConnection then AfterimageConnection:Disconnect() end
-	if ModeEffectConnection then ModeEffectConnection:Disconnect() end
-	
-	-- Speed boost
-	Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
-	SpeedLabel.Text = "💨 Speed: " .. SPEED_BOOST[CURRENT_MODE] .. "x"
-	
-	-- Create aura
-	local aura = createAura()
-	AuraConnection = RunService.Heartbeat:Connect(function()
-		if not UI_ENABLED or not aura.Parent then return end
-		aura.Position = RootPart.Position
-		aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(2), 0)
-		
-		-- Rainbow effect for SUPERSKKSKSJSJSJ
-		if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-			aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
-		end
-		
-		-- Pulse effect
-		local scale = 1 + math.sin(tick() * 5) * 0.1
-		local size = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 15 or (CURRENT_MODE == "PERFECTION" and 12 or 8)
-		aura.Size = Vector3.new(size * scale, size * scale, size * scale)
-	end)
-	
-	-- Proximity detection
-	ProximityConnection = RunService.Heartbeat:Connect(function()
-		if not UI_ENABLED then return end
-		checkProximity()
-	end)
-	
-	-- Afterimage trail
-	AfterimageConnection = RunService.Heartbeat:Connect(function()
-		if not UI_ENABLED then return end
-		if Humanoid.MoveDirection.Magnitude > 0 then
-			createAfterimage()
-		end
-	end)
-	
-	-- SUPERSKKSKSJSJSJ rainbow GUI effect
-	if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-		ModeEffectConnection = RunService.Heartbeat:Connect(function()
-			if not UI_ENABLED then return end
-			Frame.BorderColor3 = Color3.fromHSV(tick() % 1, 1, 1)
-		end)
-	end
-	
-	-- Dodge system
-	local lastPosition = RootPart.Position
-	local lastVelocity = RootPart.Velocity
-	
-	DodgeConnection = RunService.Heartbeat:Connect(function()
-		if not UI_ENABLED then return end
-		
-		local currentVelocity = RootPart.Velocity
-		local velocityMagnitude = currentVelocity.Magnitude
-		
-		-- DETECT FLING ATTACK
-		if velocityMagnitude > VELOCITY_THRESHOLD then
-			dodgeCount = dodgeCount + 1
-			DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
-			
-			local dodgeFrom = RootPart.Position
-			local dodgeDirection = -currentVelocity.Unit
-			local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE[CURRENT_MODE])
-			
-			dodgePosition = Vector3.new(
-				dodgePosition.X,
-				math.clamp(dodgePosition.Y, lastPosition.Y - 5, lastPosition.Y + 5),
-				dodgePosition.Z
-			)
-			
-			-- INSTANT DODGE
-			RootPart.CFrame = CFrame.new(dodgePosition)
-			RootPart.Velocity = Vector3.new(0, 0, 0)
-			RootPart.RotVelocity = Vector3.new(0, 0, 0)
-			
-			for _, part in pairs(Character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.Velocity = Vector3.new(0, 0, 0)
-					part.RotVelocity = Vector3.new(0, 0, 0)
-				end
-			end
-			
-			createDodgeEffect(dodgeFrom)
-			createDodgeEffect(dodgePosition)
-			
-			-- Flash GUI
-			Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			wait(0.05)
-			local headerColor = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
-				(CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or Color3.fromRGB(150, 200, 255))
-			Header.BackgroundColor3 = headerColor
-			HeaderCover.BackgroundColor3 = headerColor
-		end
-		
-		if velocityMagnitude < 50 then
-			lastPosition = RootPart.Position
-		end
-		
-		lastVelocity = currentVelocity
-	end)
+    if DodgeConnection then DodgeConnection:Disconnect() end
+    if AuraConnection then AuraConnection:Disconnect() end
+    if ProximityConnection then ProximityConnection:Disconnect() end
+    if AfterimageConnection then AfterimageConnection:Disconnect() end
+    if ModeEffectConnection then ModeEffectConnection:Disconnect() end
+    if AntiFlingConnection then AntiFlingConnection:Disconnect() end
+    
+    -- Speed boost
+    Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
+    SpeedLabel.Text = "💨 Speed: " .. SPEED_BOOST[CURRENT_MODE] .. "x"
+    
+    -- Create aura
+    local aura = createAura()
+    AuraConnection = RunService.Heartbeat:Connect(function()
+        if not UI_ENABLED or not aura.Parent then return end
+        aura.Position = RootPart.Position
+        aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(10), 0)  -- Faster rotation
+        
+        -- Rainbow effect for SUPERSKKSKSJSJSJ
+        if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+            aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
+        end
+        
+        -- Pulse effect
+        local scale = 1 + math.sin(tick() * 8) * 0.2  -- More intense pulse
+        local size = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 20 or (CURRENT_MODE == "PERFECTION" and 12 or 8)
+        aura.Size = Vector3.new(size * scale, size * scale, size * scale)
+    end)
+    
+    -- Create Anti-Fling Shield for SUPERSKKSKSJSJSJ
+    local antiFlingShield
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        antiFlingShield = createAntiFlingShield()
+    end
+    
+    -- Proximity detection
+    ProximityConnection = RunService.Heartbeat:Connect(function()
+        if not UI_ENABLED then return end
+        checkProximity()
+    end)
+    
+    -- Afterimage trail
+    AfterimageConnection = RunService.Heartbeat:Connect(function()
+        if not UI_ENABLED then return end
+        if Humanoid.MoveDirection.Magnitude > 0 then
+            createAfterimage()
+        end
+    end)
+    
+    -- SUPERSKKSKSJSJSJ rainbow GUI effect
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        ModeEffectConnection = RunService.Heartbeat:Connect(function()
+            if not UI_ENABLED then return end
+            Frame.BorderColor3 = Color3.fromHSV(tick() % 1, 1, 1)
+            
+            -- Anti-fling shield movement
+            if antiFlingShield and antiFlingShield.Parent then
+                antiFlingShield.Position = RootPart.Position
+                antiFlingShield.Color = Color3.fromHSV(tick() % 1, 1, 1)
+            end
+        end)
+    end
+    
+    -- ULTIMATE DODGE SYSTEM - NO COOLDOWN FOR SUPERSKKSKSJSJSJ
+    local lastPosition = RootPart.Position
+    local lastVelocity = RootPart.Velocity
+    
+    DodgeConnection = RunService.Heartbeat:Connect(function()
+        if not UI_ENABLED then return end
+        
+        local currentVelocity = RootPart.Velocity
+        local velocityMagnitude = currentVelocity.Magnitude
+        
+        -- INSTANT DODGE for SUPERSKKSKSJSJSJ (No cooldown, instant detection)
+        if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+            -- Ultra-sensitive fling detection
+            if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] then
+                dodgeCount = dodgeCount + 1
+                DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
+                
+                local dodgeFrom = RootPart.Position
+                local dodgeDirection = -currentVelocity.Unit
+                
+                -- MEGA DODGE DISTANCE for SUPERSKKSKSJSJSJ
+                local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE[CURRENT_MODE])
+                
+                dodgePosition = Vector3.new(
+                    dodgePosition.X,
+                    math.clamp(dodgePosition.Y, lastPosition.Y - 10, lastPosition.Y + 10),
+                    dodgePosition.Z
+                )
+                
+                -- INSTANT TELEPORT DODGE
+                RootPart.CFrame = CFrame.new(dodgePosition)
+                RootPart.Velocity = Vector3.new(0, 0, 0)
+                RootPart.RotVelocity = Vector3.new(0, 0, 0)
+                
+                -- ANTI-FLING ACTIVATION
+                antiFlingActive = true
+                applyAntiFlingForce()
+                task.wait(0.1)
+                antiFlingActive = false
+                
+                -- RESET ALL VELOCITIES
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.Velocity = Vector3.new(0, 0, 0)
+                        part.RotVelocity = Vector3.new(0, 0, 0)
+                    end
+                end
+                
+                -- Create DOUBLE dodge effect
+                createDodgeEffect(dodgeFrom)
+                createDodgeEffect(dodgePosition)
+                
+                -- Flash GUI
+                Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                task.wait(0.02)  -- Faster flash
+                Header.BackgroundColor3 = Color3.fromHSV(tick() % 1, 1, 1)
+                HeaderCover.BackgroundColor3 = Color3.fromHSV(tick() % 1, 1, 1)
+            end
+        else
+            -- Original dodge system for other modes (with cooldown)
+            local currentTime = tick()
+            local isMovingIntentionally = Humanoid.MoveDirection.Magnitude > 0.1
+            
+            if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and not isMovingIntentionally then
+                dodgeCount = dodgeCount + 1
+                DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
+                
+                local dodgeFrom = RootPart.Position
+                local dodgeDirection = -currentVelocity.Unit
+                local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE[CURRENT_MODE])
+                
+                dodgePosition = Vector3.new(
+                    dodgePosition.X,
+                    math.clamp(dodgePosition.Y, lastPosition.Y - 5, lastPosition.Y + 5),
+                    dodgePosition.Z
+                )
+                
+                RootPart.CFrame = CFrame.new(dodgePosition)
+                RootPart.Velocity = Vector3.new(0, 0, 0)
+                RootPart.RotVelocity = Vector3.new(0, 0, 0)
+                
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.Velocity = Vector3.new(0, 0, 0)
+                        part.RotVelocity = Vector3.new(0, 0, 0)
+                    end
+                end
+                
+                createDodgeEffect(dodgeFrom)
+                createDodgeEffect(dodgePosition)
+                
+                Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                task.wait(0.05)
+                local headerColor = CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or Color3.fromRGB(150, 200, 255)
+                Header.BackgroundColor3 = headerColor
+                HeaderCover.BackgroundColor3 = headerColor
+            end
+        end
+        
+        -- Update lastPosition only when velocity is stable
+        if velocityMagnitude < 50 then
+            lastPosition = RootPart.Position
+        end
+        
+        lastVelocity = currentVelocity
+    end)
+    
+    -- ANTI-FLING CONSTANT PROTECTION FOR SUPERSKKSKSJSJSJ
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        AntiFlingConnection = RunService.Heartbeat:Connect(function()
+            if not UI_ENABLED then return end
+            
+            -- Constant velocity stabilization
+            for _, part in pairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local vel = part.Velocity
+                    if vel.Magnitude > 200 then
+                        part.Velocity = vel * 0.9  -- Gradually reduce excessive velocity
+                    end
+                end
+            end
+        end)
+    end
 end
 
 local function stopUI()
-	if DodgeConnection then DodgeConnection:Disconnect() end
-	if AuraConnection then AuraConnection:Disconnect() end
-	if ProximityConnection then ProximityConnection:Disconnect() end
-	if AfterimageConnection then AfterimageConnection:Disconnect() end
-	if ModeEffectConnection then ModeEffectConnection:Disconnect() end
-	
-	Humanoid.WalkSpeed = 16
-	WarningFrame.Visible = false
-	
-	-- Remove aura
-	for _, v in pairs(FXFolder:GetChildren()) do
-		if v.Name == "UIAura" then
-			v:Destroy()
-		end
-	end
+    if DodgeConnection then DodgeConnection:Disconnect() end
+    if AuraConnection then AuraConnection:Disconnect() end
+    if ProximityConnection then ProximityConnection:Disconnect() end
+    if AfterimageConnection then AfterimageConnection:Disconnect() end
+    if ModeEffectConnection then ModeEffectConnection:Disconnect() end
+    if AntiFlingConnection then AntiFlingConnection:Disconnect() end
+    
+    Humanoid.WalkSpeed = 16
+    WarningFrame.Visible = false
+    antiFlingActive = false
+    
+    -- Remove effects
+    for _, v in pairs(FXFolder:GetChildren()) do
+        if v.Name == "UIAura" or v.Name == "AntiFlingShield" then
+            v:Destroy()
+        end
+    end
 end
 
 -- MODE SELECTION
 MasteredBtn.MouseButton1Click:Connect(function()
-	CURRENT_MODE = "MASTERED"
-	ModeLabel.Text = "🌟 Mode: MASTERED"
-	SpeedLabel.Text = "💨 Speed: 2.5x"
-	Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
-	if UI_ENABLED then
-		stopUI()
-		wait(0.1)
-		startUI()
-	end
+    CURRENT_MODE = "MASTERED"
+    ModeLabel.Text = "🌟 Mode: MASTERED"
+    SpeedLabel.Text = "💨 Speed: 2.5x"
+    Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
+    if UI_ENABLED then
+        stopUI()
+        task.wait(0.1)
+        startUI()
+    end
 end)
 
 PerfectionBtn.MouseButton1Click:Connect(function()
-	CURRENT_MODE = "PERFECTION"
-	ModeLabel.Text = "💫 Mode: PERFECTION"
-	SpeedLabel.Text = "💨 Speed: 5.0x"
-	Frame.BorderColor3 = Color3.fromRGB(200, 150, 255)
-	if UI_ENABLED then
-		stopUI()
-		wait(0.1)
-		startUI()
-	end
+    CURRENT_MODE = "PERFECTION"
+    ModeLabel.Text = "💫 Mode: PERFECTION"
+    SpeedLabel.Text = "💨 Speed: 5.0x"
+    Frame.BorderColor3 = Color3.fromRGB(200, 150, 255)
+    if UI_ENABLED then
+        stopUI()
+        task.wait(0.1)
+        startUI()
+    end
 end)
 
 SuperBtn.MouseButton1Click:Connect(function()
-	CURRENT_MODE = "SUPERSKKSKSJSJSJ"
-	ModeLabel.Text = "💥 Mode: SUPERSKKSKSJSJSJ"
-	SpeedLabel.Text = "💨 Speed: 10.0x"
-	if UI_ENABLED then
-		stopUI()
-		wait(0.1)
-		startUI()
-	end
+    CURRENT_MODE = "SUPERSKKSKSJSJSJ"
+    ModeLabel.Text = "💥 Mode: SUPERSKKSKSJSJSJ"
+    SpeedLabel.Text = "💨 Speed: 15.0x"
+    if UI_ENABLED then
+        stopUI()
+        task.wait(0.1)
+        startUI()
+    end
 end)
 
 -- TOGGLE BUTTON
 ToggleButton.MouseButton1Click:Connect(function()
-	UI_ENABLED = not UI_ENABLED
-	
-	if UI_ENABLED then
-		ToggleButton.Text = CURRENT_MODE
-		local headerColor = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
-			(CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or Color3.fromRGB(100, 200, 255))
-		ButtonGradient.Color = ColorSequence.new(headerColor, headerColor)
-		Header.BackgroundColor3 = headerColor
-		HeaderCover.BackgroundColor3 = headerColor
-		StatusLabel.Text = "⚡ ACTIVE ⚡"
-		StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
-		startUI()
-	else
-		ToggleButton.Text = "AWAKEN"
-		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
-		Header.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
-		HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
-		StatusLabel.Text = "🔴 DORMANT 🔴"
-		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-		Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
-		stopUI()
-	end
+    UI_ENABLED = not UI_ENABLED
+    
+    if UI_ENABLED then
+        ToggleButton.Text = CURRENT_MODE
+        local headerColor = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
+            (CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or Color3.fromRGB(100, 200, 255))
+        ButtonGradient.Color = ColorSequence.new(headerColor, headerColor)
+        Header.BackgroundColor3 = headerColor
+        HeaderCover.BackgroundColor3 = headerColor
+        StatusLabel.Text = "⚡ ACTIVE ⚡"
+        StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
+        startUI()
+    else
+        ToggleButton.Text = "AWAKEN"
+        ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
+        Header.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+        HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+        StatusLabel.Text = "🔴 DORMANT 🔴"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
+        stopUI()
+    end
 end)
 
 -- Character respawn
 LocalPlayer.CharacterAdded:Connect(function(char)
-	Character = char
-	Humanoid = char:WaitForChild("Humanoid")
-	RootPart = char:WaitForChild("HumanoidRootPart")
-	dodgeCount = 0
-	DodgeLabel.Text = "⚡ Dodges: 0"
-	wait(0.5)
-	if UI_ENABLED then
-		startUI()
-	end
+    Character = char
+    Humanoid = char:WaitForChild("Humanoid")
+    RootPart = char:WaitForChild("HumanoidRootPart")
+    dodgeCount = 0
+    DodgeLabel.Text = "⚡ Dodges: 0"
+    task.wait(0.5)
+    if UI_ENABLED then
+        startUI()
+    end
 end)
 
 print("⚡🔥 SUPER'S ULTRA INSTINCT LOADED 🔥⚡")
-print("3 MODES: MASTERED (2.5x), PERFECTION (5x), SUPERSKKSKSJSJSJ (10x)")
-print("Auto-dodge, Aura, Speed, Afterimages")
+print("3 MODES: MASTERED (2.5x), PERFECTION (5x), SUPERSKKSKSJSJSJ (15x)")
+print("SUPERSKKSKSJSJSJ FEATURES:")
+print("- 15x Speed Boost")
+print("- Instant No-Cooldown Dodge")
+print("- Anti-Fling Shield (10000 Force)")
+print("- Ultra-sensitive fling detection (80 velocity)")
+print("- 100 unit dodge distance")
+print("- Rainbow effects everywhere")
 print("Select mode then click AWAKEN!")
