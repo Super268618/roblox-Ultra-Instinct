@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -15,23 +16,24 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 local UI_ENABLED = false
 local CURRENT_MODE = "MASTERED" -- MASTERED, PERFECTION, SUPERSKKSKSJSJSJ
 
--- PERFECTED SETTINGS FOR SUPERSKKSKSJSJSJ MODE
+-- ULTIMATE SETTINGS FOR SUPERSKKSKSJSJSJ MODE
 local VELOCITY_THRESHOLD = {
     MASTERED = 150,
     PERFECTION = 200,
-    SUPERSKKSKSJSJSJ = 80  -- LOWER threshold for instant detection of flings!
+    SUPERSKKSKSJSJSJ = 50  -- ULTRA SENSITIVE DETECTION
 }
 
 local DODGE_DISTANCE = {
     MASTERED = 25,
     PERFECTION = 35,
-    SUPERSKKSKSJSJSJ = 100  -- MUCH longer dodge distance
+    SUPERSKKSKSJSJSJ = 75  -- GOD-LIKE DODGE DISTANCE
 }
 
+-- ALL MODES HAVE 2.5x SPEED
 local SPEED_BOOST = {
     MASTERED = 2.5,
-    PERFECTION = 5.0,
-    SUPERSKKSKSJSJSJ = 15.0  -- Increased to 15x for truly overpowered speed
+    PERFECTION = 2.5,
+    SUPERSKKSKSJSJSJ = 2.5  -- ALL MODES SAME SPEED
 }
 
 local PROXIMITY_RANGE = 15
@@ -39,18 +41,18 @@ local PROXIMITY_RANGE = 15
 local AFTERIMAGE_INTERVAL = {
     MASTERED = 0.08,
     PERFECTION = 0.05,
-    SUPERSKKSKSJSJSJ = 0.01  -- Instant afterimages
+    SUPERSKKSKSJSJSJ = 0.005  -- INSANELY FAST AFTERIMAGES
 }
 
--- NEW: Anti-Fling Protection Settings
+-- GOD-LIKE ANTI-FLING
 local ANTI_FLING_FORCE = {
     MASTERED = 1000,
     PERFECTION = 2000,
-    SUPERSKKSKSJSJSJ = 10000  -- Insane anti-fling force
+    SUPERSKKSKSJSJSJ = 50000  -- GOD-LIKE ANTI-FLING
 }
 
 -- Connections
-local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, ModeEffectConnection, AntiFlingConnection
+local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, ModeEffectConnection, AntiFlingConnection, AudioConnection
 local dodgeCount = 0
 local lastAfterimage = 0
 local antiFlingActive = false
@@ -148,7 +150,7 @@ MasteredBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 MasteredBtn.Position = UDim2.new(0.05, 0, 0.35, 0)
 MasteredBtn.Size = UDim2.new(0.9, 0, 0, 20)
 MasteredBtn.Font = Enum.Font.Gotham
-MasteredBtn.Text = "🌟 MASTERED (2.5x)"
+MasteredBtn.Text = "🌟 MASTERED"
 MasteredBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MasteredBtn.TextSize = 11
 local MasteredCorner = Instance.new("UICorner")
@@ -161,7 +163,7 @@ PerfectionBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
 PerfectionBtn.Position = UDim2.new(0.05, 0, 0.575, 0)
 PerfectionBtn.Size = UDim2.new(0.9, 0, 0, 20)
 PerfectionBtn.Font = Enum.Font.Gotham
-PerfectionBtn.Text = "💫 PERFECTION (5.0x)"
+PerfectionBtn.Text = "💫 PERFECTION"
 PerfectionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 PerfectionBtn.TextSize = 11
 local PerfectionCorner = Instance.new("UICorner")
@@ -174,7 +176,7 @@ SuperBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
 SuperBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
 SuperBtn.Size = UDim2.new(0.9, 0, 0, 20)
 SuperBtn.Font = Enum.Font.GothamBold
-SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ (15.0x)"
+SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ"
 SuperBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SuperBtn.TextSize = 10
 local SuperCorner = Instance.new("UICorner")
@@ -268,66 +270,88 @@ WarningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 WarningLabel.TextSize = 18
 WarningLabel.Parent = WarningFrame
 
--- NEW: ANTI-FLING SHIELD (Only for SUPERSKKSKSJSJSJ)
+-- GOD-LIKE ANTI-FLING SHIELD (Only for SUPERSKKSKSJSJSJ)
 local function createAntiFlingShield()
-    if CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return end
+    if CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return nil end
     
     local shield = Instance.new("Part")
-    shield.Name = "AntiFlingShield"
-    shield.Size = Vector3.new(25, 25, 25)
+    shield.Name = "GodShield"
+    shield.Size = Vector3.new(8, 8, 8)  -- SMALL BUT MIGHTY
     shield.Position = RootPart.Position
     shield.Anchored = true
     shield.CanCollide = false
     shield.Material = Enum.Material.Neon
     shield.Color = Color3.fromHSV(tick() % 1, 1, 1)
-    shield.Transparency = 0.3
+    shield.Transparency = 0.1  -- ALMOST SOLID
     shield.Shape = Enum.PartType.Ball
     shield.Parent = FXFolder
     
-    local mesh = Instance.new("SpecialMesh")
-    mesh.MeshType = Enum.MeshType.Sphere
-    mesh.Scale = Vector3.new(1, 1, 1)
-    mesh.Parent = shield
+    -- MULTIPLE LAYERS FOR GOD-LIKE EFFECT
+    for i = 1, 3 do
+        local layer = Instance.new("Part")
+        layer.Name = "ShieldLayer_" .. i
+        layer.Size = Vector3.new(8 + (i * 1.5), 8 + (i * 1.5), 8 + (i * 1.5))
+        layer.Position = RootPart.Position
+        layer.Anchored = true
+        layer.CanCollide = false
+        layer.Material = Enum.Material.Neon
+        layer.Color = Color3.fromHSV((tick() + i/3) % 1, 1, 1)
+        layer.Transparency = 0.2 + (i * 0.1)
+        layer.Shape = Enum.PartType.Ball
+        layer.Parent = FXFolder
+        
+        local light = Instance.new("SurfaceLight")
+        light.Parent = layer
+        light.Face = Enum.NormalId.Front
+        light.Color = Color3.fromHSV((tick() + i/3) % 1, 1, 1)
+        light.Brightness = 5 + (i * 2)
+        light.Range = 15 + (i * 5)
+        light.Angle = 180
+    end
     
     return shield
 end
 
--- ULTIMATE ANTI-FLING SYSTEM (OP VERSION)
-local function applyAntiFlingForce()
+-- ULTIMATE ANTI-FLING SYSTEM (GOD MODE)
+local function applyGodAntiFlingForce()
     if not antiFlingActive or CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return end
     
-    -- Counter all external forces with INSANE force
+    -- GOD-LIKE ANTI-FLING: Counter with divine power
     for _, part in pairs(Character:GetDescendants()) do
         if part:IsA("BasePart") then
             local currentVel = part.Velocity
-            if currentVel.Magnitude > 50 then -- Only counter high velocity
-                -- Reverse the velocity with 10x force
+            if currentVel.Magnitude > 30 then  -- Even slight flings
+                -- REVERSE WITH DIVINE POWER
                 local counterForce = -currentVel.Unit * ANTI_FLING_FORCE[CURRENT_MODE]
                 part:ApplyImpulse(counterForce)
                 
-                -- Add random stabilization for extra OP effect
+                -- DIVINE STABILIZATION
+                part.Velocity = Vector3.new(0, 0, 0)
+                part.RotVelocity = Vector3.new(0, 0, 0)
+                
+                -- ADD HOLY ENERGY
                 part:ApplyImpulse(Vector3.new(
-                    math.random(-100, 100),
-                    math.random(50, 200),
-                    math.random(-100, 100)
+                    math.random(-500, 500),
+                    math.random(200, 1000),
+                    math.random(-500, 500)
                 ))
             end
         end
     end
 end
 
--- AURA CREATION
+-- AURA CREATION - GOD-LIKE BUT SMALL FOR SUPERSKKSKSJSJSJ
 local function createAura()
     local auraSize, auraColor
     
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        auraSize = 20  -- Larger aura
+        auraSize = 6  -- SMALL BUT GOD-LIKE
         auraColor = Color3.fromHSV(tick() % 1, 1, 1) -- Rainbow
     elseif CURRENT_MODE == "PERFECTION" then
-        auraSize = 12
+        auraSize = 8
         auraColor = Color3.fromRGB(255, 200, 255)
     else
-        auraSize = 8
+        auraSize = 6
         auraColor = Color3.fromRGB(200, 200, 255)
     end
     
@@ -338,10 +362,46 @@ local function createAura()
     aura.Anchored = true
     aura.CanCollide = false
     aura.Material = Enum.Material.Neon
-    aura.Color = auraColor
-    aura.Transparency = 0.7
+    
+    -- GOD-LIKE AURA FOR SUPERSKKSKSJSJSJ
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
+        aura.Transparency = 0  -- SOLID GOD AURA
+        aura.Material = Enum.Material.ForceField
+    else
+        aura.Color = auraColor
+        aura.Transparency = 0.7
+    end
+    
     aura.Shape = Enum.PartType.Ball
     aura.Parent = FXFolder
+    
+    -- GOD-LIKE EFFECTS FOR SUPERSKKSKSJSJSJ
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        -- MULTIPLE GOD LIGHTS
+        for i = 1, 5 do
+            local light = Instance.new("PointLight")
+            light.Parent = aura
+            light.Color = Color3.fromHSV((tick() + i/5) % 1, 1, 1)
+            light.Brightness = 10
+            light.Range = 20
+            light.Shadows = true
+        end
+        
+        -- HOLY PARTICLES
+        local particles = Instance.new("ParticleEmitter")
+        particles.Parent = aura
+        particles.Texture = "rbxassetid://242719275"
+        particles.Rate = 100
+        particles.Lifetime = NumberRange.new(0.5, 1)
+        particles.Speed = NumberRange.new(5, 15)
+        particles.Size = NumberSequence.new(0.1, 0.5)
+        particles.Transparency = NumberSequence.new(0, 1)
+        particles.Color = ColorSequence.new(Color3.fromHSV(tick() % 1, 1, 1))
+        particles.Rotation = NumberRange.new(0, 360)
+        particles.VelocityInheritance = 0
+        particles.EmissionDirection = Enum.NormalId.Top
+    end
     
     local mesh = Instance.new("SpecialMesh")
     mesh.MeshType = Enum.MeshType.Sphere
@@ -351,7 +411,7 @@ local function createAura()
     return aura
 end
 
--- AFTERIMAGE EFFECT
+-- AFTERIMAGE EFFECT - DIVINE SPEED FOR SUPERSKKSKSJSJSJ
 local function createAfterimage()
     if tick() - lastAfterimage < AFTERIMAGE_INTERVAL[CURRENT_MODE] then return end
     lastAfterimage = tick()
@@ -370,9 +430,18 @@ local function createAfterimage()
             local clone = part:Clone()
             clone.Anchored = true
             clone.CanCollide = false
-            clone.Material = Enum.Material.Neon
-            clone.Color = color
-            clone.Transparency = 0.5
+            clone.Material = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Enum.Material.Neon or Enum.Material.Plastic
+            
+            -- GOD-LIKE AFTERIMAGES
+            if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+                clone.Color = Color3.fromHSV(tick() % 1, 1, 1)
+                clone.Transparency = 0.3
+                clone.Material = Enum.Material.Glass
+            else
+                clone.Color = color
+                clone.Transparency = 0.5
+            end
+            
             clone.CFrame = part.CFrame
             clone.Parent = FXFolder
             
@@ -382,19 +451,20 @@ local function createAfterimage()
                 end
             end
             
-            TweenService:Create(clone, TweenInfo.new(0.3), {Transparency = 1}):Play()
-            Debris:AddItem(clone, 0.3)
+            local fadeTime = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 0.1 or 0.3
+            TweenService:Create(clone, TweenInfo.new(fadeTime), {Transparency = 1}):Play()
+            Debris:AddItem(clone, fadeTime)
         end
     end
 end
 
--- ULTIMATE DODGE EFFECT (MEGA OP VERSION FOR SUPERSKKSKSJSJSJ)
+-- DIVINE DODGE EFFECT
 local function createDodgeEffect(position)
     local boltCount, effectSize
     
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        boltCount = 30  -- More bolts
-        effectSize = 15 -- Larger effect
+        boltCount = 50  -- DIVINE LIGHTNING
+        effectSize = 8  -- SMALL BUT MIGHTY
     elseif CURRENT_MODE == "PERFECTION" then
         boltCount = 12
         effectSize = 8
@@ -411,32 +481,47 @@ local function createDodgeEffect(position)
     part.Position = position
     part.Anchored = true
     part.CanCollide = false
-    part.Material = Enum.Material.Neon
+    part.Material = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Enum.Material.Neon or Enum.Material.Plastic
     part.Color = color
-    part.Transparency = 0.2
+    
+    -- GOD-LIKE DODGE EFFECT
+    if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+        part.Transparency = 0.1
+        part.Material = Enum.Material.ForceField
+    else
+        part.Transparency = 0.2
+    end
+    
     part.Shape = Enum.PartType.Ball
     part.Parent = FXFolder
     
-    -- EPIC Lightning ring
+    -- DIVINE LIGHTNING
     for i = 1, boltCount do
         local lightning = Instance.new("Part")
-        lightning.Size = Vector3.new(0.5, 8, 0.5)  -- Larger lightning
+        lightning.Size = Vector3.new(0.3, 6, 0.3)
         lightning.Position = position
         lightning.Anchored = true
         lightning.CanCollide = false
-        lightning.Material = Enum.Material.Neon
+        lightning.Material = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Enum.Material.Neon or Enum.Material.Plastic
         lightning.Color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV((i/boltCount), 1, 1) or Color3.fromRGB(255, 255, 255)
         lightning.Parent = FXFolder
         
         local angle = (i / boltCount) * math.pi * 2
-        lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 5)
+        lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 4)
         
-        TweenService:Create(lightning, TweenInfo.new(0.15), {Transparency = 1, Size = Vector3.new(0.2, 12, 0.2)}):Play()
-        Debris:AddItem(lightning, 0.15)
+        local fadeTime = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 0.08 or 0.2
+        TweenService:Create(lightning, TweenInfo.new(fadeTime), {Transparency = 1, Size = Vector3.new(0.1, 10, 0.1)}):Play()
+        Debris:AddItem(lightning, fadeTime)
     end
     
-    TweenService:Create(part, TweenInfo.new(0.3), {Size = Vector3.new(effectSize * 3, effectSize * 3, effectSize * 3), Transparency = 1}):Play()
-    Debris:AddItem(part, 0.3)
+    local expandTime = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 0.15 or 0.4
+    local expandMultiplier = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 4 or 2
+    
+    TweenService:Create(part, TweenInfo.new(expandTime), {
+        Size = Vector3.new(effectSize * expandMultiplier, effectSize * expandMultiplier, effectSize * expandMultiplier), 
+        Transparency = 1
+    }):Play()
+    Debris:AddItem(part, expandTime)
 end
 
 -- PROXIMITY DETECTION
@@ -457,12 +542,12 @@ local function checkProximity()
     WarningFrame.Visible = #nearbyPlayers > 0
     if #nearbyPlayers > 0 then
         TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
-        wait(0.3)
+        task.wait(0.3)
         TweenService:Create(WarningFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
     end
 end
 
--- ULTIMATE DODGE SYSTEM - OP VERSION
+-- DIVINE DODGE SYSTEM - GOD MODE FOR SUPERSKKSKSJSJSJ
 local function startUI()
     if DodgeConnection then DodgeConnection:Disconnect() end
     if AuraConnection then AuraConnection:Disconnect() end
@@ -470,33 +555,41 @@ local function startUI()
     if AfterimageConnection then AfterimageConnection:Disconnect() end
     if ModeEffectConnection then ModeEffectConnection:Disconnect() end
     if AntiFlingConnection then AntiFlingConnection:Disconnect() end
+    if AudioConnection then AudioConnection:Disconnect() end
     
-    -- Speed boost
+    -- Speed boost (ALL MODES 2.5x)
     Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
-    SpeedLabel.Text = "💨 Speed: " .. SPEED_BOOST[CURRENT_MODE] .. "x"
+    SpeedLabel.Text = "💨 Speed: 2.5x"
     
-    -- Create aura
+    -- Create god-like aura
     local aura = createAura()
     AuraConnection = RunService.Heartbeat:Connect(function()
         if not UI_ENABLED or not aura.Parent then return end
         aura.Position = RootPart.Position
-        aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(10), 0)  -- Faster rotation
+        aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(20), math.rad(10))  -- GOD-LIKE ROTATION
         
-        -- Rainbow effect for SUPERSKKSKSJSJSJ
+        -- DIVINE AURA FOR SUPERSKKSKSJSJSJ
         if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
             aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
+            
+            -- PULSE WITH DIVINE ENERGY
+            local divinePulse = 1 + math.sin(tick() * 12) * 0.3
+            aura.Size = Vector3.new(6 * divinePulse, 6 * divinePulse, 6 * divinePulse)
+            
+            -- UPDATE PARTICLE COLORS
+            if aura:FindFirstChild("ParticleEmitter") then
+                aura.ParticleEmitter.Color = ColorSequence.new(Color3.fromHSV(tick() % 1, 1, 1))
+            end
+        else
+            -- Normal pulse for other modes
+            local normalPulse = 1 + math.sin(tick() * 5) * 0.1
+            aura.Size = Vector3.new(6 * normalPulse, 6 * normalPulse, 6 * normalPulse)
         end
-        
-        -- Pulse effect
-        local scale = 1 + math.sin(tick() * 8) * 0.2  -- More intense pulse
-        local size = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 20 or (CURRENT_MODE == "PERFECTION" and 12 or 8)
-        aura.Size = Vector3.new(size * scale, size * scale, size * scale)
     end)
     
     -- Create Anti-Fling Shield for SUPERSKKSKSJSJSJ
-    local antiFlingShield
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        antiFlingShield = createAntiFlingShield()
+        createAntiFlingShield()
     end
     
     -- Proximity detection
@@ -513,21 +606,29 @@ local function startUI()
         end
     end)
     
-    -- SUPERSKKSKSJSJSJ rainbow GUI effect
+    -- SUPERSKKSKSJSJSJ DIVINE EFFECTS
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
         ModeEffectConnection = RunService.Heartbeat:Connect(function()
             if not UI_ENABLED then return end
+            
+            -- RAINBOW GUI
             Frame.BorderColor3 = Color3.fromHSV(tick() % 1, 1, 1)
             
-            -- Anti-fling shield movement
-            if antiFlingShield and antiFlingShield.Parent then
-                antiFlingShield.Position = RootPart.Position
-                antiFlingShield.Color = Color3.fromHSV(tick() % 1, 1, 1)
+            -- UPDATE SHIELD LAYERS
+            for _, v in pairs(FXFolder:GetChildren()) do
+                if string.find(v.Name, "ShieldLayer_") then
+                    v.Position = RootPart.Position
+                    v.Color = Color3.fromHSV((tick() + tonumber(string.sub(v.Name, -1)) / 3) % 1, 1, 1)
+                    
+                    if v:FindFirstChildOfClass("SurfaceLight") then
+                        v.SurfaceLight.Color = Color3.fromHSV((tick() + tonumber(string.sub(v.Name, -1)) / 3) % 1, 1, 1)
+                    end
+                end
             end
         end)
     end
     
-    -- ULTIMATE DODGE SYSTEM - NO COOLDOWN FOR SUPERSKKSKSJSJSJ
+    -- DIVINE DODGE SYSTEM - INSTANT GOD MODE
     local lastPosition = RootPart.Position
     local lastVelocity = RootPart.Velocity
     
@@ -537,9 +638,9 @@ local function startUI()
         local currentVelocity = RootPart.Velocity
         local velocityMagnitude = currentVelocity.Magnitude
         
-        -- INSTANT DODGE for SUPERSKKSKSJSJSJ (No cooldown, instant detection)
+        -- DIVINE INSTANT DODGE for SUPERSKKSKSJSJSJ
         if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-            -- Ultra-sensitive fling detection
+            -- ULTRA-SENSITIVE DIVINE DETECTION
             if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] then
                 dodgeCount = dodgeCount + 1
                 DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
@@ -547,27 +648,27 @@ local function startUI()
                 local dodgeFrom = RootPart.Position
                 local dodgeDirection = -currentVelocity.Unit
                 
-                -- MEGA DODGE DISTANCE for SUPERSKKSKSJSJSJ
+                -- DIVINE TELEPORT
                 local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE[CURRENT_MODE])
                 
                 dodgePosition = Vector3.new(
                     dodgePosition.X,
-                    math.clamp(dodgePosition.Y, lastPosition.Y - 10, lastPosition.Y + 10),
+                    math.clamp(dodgePosition.Y, lastPosition.Y - 15, lastPosition.Y + 15),
                     dodgePosition.Z
                 )
                 
-                -- INSTANT TELEPORT DODGE
+                -- INSTANT DIVINE TELEPORT
                 RootPart.CFrame = CFrame.new(dodgePosition)
                 RootPart.Velocity = Vector3.new(0, 0, 0)
                 RootPart.RotVelocity = Vector3.new(0, 0, 0)
                 
-                -- ANTI-FLING ACTIVATION
+                -- ACTIVATE DIVINE ANTI-FLING
                 antiFlingActive = true
-                applyAntiFlingForce()
-                task.wait(0.1)
+                applyGodAntiFlingForce()
+                task.wait(0.05)
                 antiFlingActive = false
                 
-                -- RESET ALL VELOCITIES
+                -- DIVINE PROTECTION
                 for _, part in pairs(Character:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.Velocity = Vector3.new(0, 0, 0)
@@ -575,23 +676,24 @@ local function startUI()
                     end
                 end
                 
-                -- Create DOUBLE dodge effect
-                createDodgeEffect(dodgeFrom)
-                createDodgeEffect(dodgePosition)
+                -- CREATE DIVINE DODGE EFFECTS
+                for i = 1, 3 do
+                    task.spawn(function()
+                        createDodgeEffect(dodgeFrom + Vector3.new(0, i, 0))
+                        createDodgeEffect(dodgePosition + Vector3.new(0, i, 0))
+                    end)
+                end
                 
-                -- Flash GUI
+                -- FLASH WITH DIVINE LIGHT
                 Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                task.wait(0.02)  -- Faster flash
+                task.wait(0.01)  -- INSTANT FLASH
                 Header.BackgroundColor3 = Color3.fromHSV(tick() % 1, 1, 1)
                 HeaderCover.BackgroundColor3 = Color3.fromHSV(tick() % 1, 1, 1)
             end
         else
-            -- Original dodge system for other modes (with cooldown)
-            local currentTime = tick()
-            local isMovingIntentionally = Humanoid.MoveDirection.Magnitude > 0.1
-            
-            if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and not isMovingIntentionally then
+            -- Normal dodge for other modes
+            if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] then
                 dodgeCount = dodgeCount + 1
                 DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
                 
@@ -628,7 +730,7 @@ local function startUI()
             end
         end
         
-        -- Update lastPosition only when velocity is stable
+        -- Update lastPosition
         if velocityMagnitude < 50 then
             lastPosition = RootPart.Position
         end
@@ -636,17 +738,17 @@ local function startUI()
         lastVelocity = currentVelocity
     end)
     
-    -- ANTI-FLING CONSTANT PROTECTION FOR SUPERSKKSKSJSJSJ
+    -- CONSTANT DIVINE PROTECTION FOR SUPERSKKSKSJSJSJ
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
         AntiFlingConnection = RunService.Heartbeat:Connect(function()
             if not UI_ENABLED then return end
             
-            -- Constant velocity stabilization
+            -- DIVINE VELOCITY STABILIZATION
             for _, part in pairs(Character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     local vel = part.Velocity
-                    if vel.Magnitude > 200 then
-                        part.Velocity = vel * 0.9  -- Gradually reduce excessive velocity
+                    if vel.Magnitude > 100 then
+                        part.Velocity = vel * 0.7  -- DIVINE SLOWDOWN
                     end
                 end
             end
@@ -661,17 +763,21 @@ local function stopUI()
     if AfterimageConnection then AfterimageConnection:Disconnect() end
     if ModeEffectConnection then ModeEffectConnection:Disconnect() end
     if AntiFlingConnection then AntiFlingConnection:Disconnect() end
+    if AudioConnection then AudioConnection:Disconnect() end
     
     Humanoid.WalkSpeed = 16
     WarningFrame.Visible = false
     antiFlingActive = false
     
-    -- Remove effects
+    -- Remove all effects
     for _, v in pairs(FXFolder:GetChildren()) do
-        if v.Name == "UIAura" or v.Name == "AntiFlingShield" then
-            v:Destroy()
-        end
+        v:Destroy()
     end
+    
+    -- Reset GUI colors
+    Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
+    Header.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+    HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
 end
 
 -- MODE SELECTION
@@ -690,7 +796,7 @@ end)
 PerfectionBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "PERFECTION"
     ModeLabel.Text = "💫 Mode: PERFECTION"
-    SpeedLabel.Text = "💨 Speed: 5.0x"
+    SpeedLabel.Text = "💨 Speed: 2.5x"
     Frame.BorderColor3 = Color3.fromRGB(200, 150, 255)
     if UI_ENABLED then
         stopUI()
@@ -702,7 +808,7 @@ end)
 SuperBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "SUPERSKKSKSJSJSJ"
     ModeLabel.Text = "💥 Mode: SUPERSKKSKSJSJSJ"
-    SpeedLabel.Text = "💨 Speed: 15.0x"
+    SpeedLabel.Text = "💨 Speed: 2.5x"
     if UI_ENABLED then
         stopUI()
         task.wait(0.1)
@@ -749,13 +855,15 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     end
 end)
 
-print("⚡🔥 SUPER'S ULTRA INSTINCT LOADED 🔥⚡")
-print("3 MODES: MASTERED (2.5x), PERFECTION (5x), SUPERSKKSKSJSJSJ (15x)")
-print("SUPERSKKSKSJSJSJ FEATURES:")
-print("- 15x Speed Boost")
-print("- Instant No-Cooldown Dodge")
-print("- Anti-Fling Shield (10000 Force)")
-print("- Ultra-sensitive fling detection (80 velocity)")
-print("- 100 unit dodge distance")
-print("- Rainbow effects everywhere")
+print("⚡🔥 SUPER'S ULTRA INSTINCT - DIVINE EDITION LOADED 🔥⚡")
+print("ALL MODES: 2.5x Speed Boost (Safe)")
+print("SUPERSKKSKSJSJSJ GOD MODE FEATURES:")
+print("- Small but GOD-LIKE Rainbow Aura (6 studs)")
+print("- 50,000 Anti-Fling Force (DIVINE PROTECTION)")
+print("- Ultra-sensitive fling detection (50 velocity)")
+print("- 75 unit dodge distance")
+print("- Instant afterimages (0.005 interval)")
+print("- Multiple shield layers with SurfaceLights")
+print("- ForceField material with particle effects")
+print("- No cooldown, instant divine dodges")
 print("Select mode then click AWAKEN!")
