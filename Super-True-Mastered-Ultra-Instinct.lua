@@ -1,11 +1,11 @@
--- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE -- Multiple modes with ultimate Superskksksjsjsj transformation -- Place in StarterPlayer → StarterPlayerScripts
+-- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE
+-- Place in StarterPlayer → StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
-local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -14,33 +14,32 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 -- MODE SETTINGS
 local UI_ENABLED = false
-local CURRENT_MODE = "MASTERED" -- MASTERED, PERFECTION, SUPERSKKSKSJSJSJ
+local CURRENT_MODE = "MASTERED"
 
 -- ADVANCED FLING DETECTION SETTINGS
 local VELOCITY_THRESHOLD = {
-    MASTERED = 250,      -- Increased for better fling detection
-    PERFECTION = 300,    -- Increased for better fling detection
-    SUPERSKKSKSJSJSJ = 150  -- Ultra-sensitive for SUPERSKKSKSJSJSJ
+    MASTERED = 250,
+    PERFECTION = 300,
+    SUPERSKKSKSJSJSJ = 150
 }
 
--- Real fling detection: Check velocity changes (acceleration)
 local ACCELERATION_THRESHOLD = {
     MASTERED = 500,
     PERFECTION = 700,
-    SUPERSKKSKSJSJSJ = 300  -- Very sensitive to acceleration changes
+    SUPERSKKSKSJSJSJ = 300
 }
 
 local DODGE_DISTANCE = {
     MASTERED = 25,
     PERFECTION = 35,
-    SUPERSKKSKSJSJSJ = 50  -- Balanced dodge distance
+    SUPERSKKSKSJSJSJ = 50
 }
 
 -- ALL MODES HAVE 2.5x SPEED
 local SPEED_BOOST = {
     MASTERED = 2.5,
     PERFECTION = 2.5,
-    SUPERSKKSKSJSJSJ = 2.5  -- ALL MODES SAME SPEED
+    SUPERSKKSKSJSJSJ = 2.5
 }
 
 local PROXIMITY_RANGE = 15
@@ -48,14 +47,14 @@ local PROXIMITY_RANGE = 15
 local AFTERIMAGE_INTERVAL = {
     MASTERED = 0.08,
     PERFECTION = 0.05,
-    SUPERSKKSKSJSJSJ = 0.01  -- Fast afterimages
+    SUPERSKKSKSJSJSJ = 0.01
 }
 
 -- ADVANCED ANTI-FLING
 local ANTI_FLING_FORCE = {
     MASTERED = 1000,
     PERFECTION = 2000,
-    SUPERSKKSKSJSJSJ = 10000  -- Strong anti-fling
+    SUPERSKKSKSJSJSJ = 10000
 }
 
 -- Connections
@@ -71,23 +70,190 @@ local lastDodgeTime = 0
 local DODGE_COOLDOWN = {
     MASTERED = 0.3,
     PERFECTION = 0.2,
-    SUPERSKKSKSJSJSJ = 0  -- No cooldown for SUPERSKKSKSJSJSJ
+    SUPERSKKSKSJSJSJ = 0
 }
 
 -- Effects Folder
 local FXFolder = Instance.new("Folder", workspace)
 FXFolder.Name = "SuperUI_FX"
 
--- GUI (same as before...)
--- [GUI code unchanged, use your existing GUI]
+-- Create ScreenGui FIRST - This was missing!
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SuperUIGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- ADVANCED AURA FOR SUPERSKKSKSJSJSJ - FIXED & GOD-LIKE
+-- Create GUI Frame
+local Frame = Instance.new("Frame")
+Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
+Frame.BorderSizePixel = 3
+Frame.Position = UDim2.new(0.35, 0, 0.25, 0)
+Frame.Size = UDim2.new(0, 280, 0, 320)
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = Frame
+
+local Header = Instance.new("Frame")
+Header.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+Header.BorderSizePixel = 0
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.Parent = Frame
+
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 15)
+HeaderCorner.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "⚡ SUPER'S ULTRA INSTINCT ⚡"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+Title.TextScaled = true
+Title.Parent = Header
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0.1, 0, 0.15, 0)
+StatusLabel.Size = UDim2.new(0.8, 0, 0, 25)
+StatusLabel.Font = Enum.Font.GothamBold
+StatusLabel.Text = "🔴 DORMANT 🔴"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+StatusLabel.TextSize = 16
+StatusLabel.Parent = Frame
+
+-- Mode Selection
+local ModeSelectFrame = Instance.new("Frame")
+ModeSelectFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+ModeSelectFrame.BorderSizePixel = 0
+ModeSelectFrame.Position = UDim2.new(0.1, 0, 0.25, 0)
+ModeSelectFrame.Size = UDim2.new(0.8, 0, 0, 85)
+ModeSelectFrame.Parent = Frame
+
+local ModeTitle = Instance.new("TextLabel")
+ModeTitle.BackgroundTransparency = 1
+ModeTitle.Position = UDim2.new(0, 0, 0, 5)
+ModeTitle.Size = UDim2.new(1, 0, 0, 20)
+ModeTitle.Font = Enum.Font.GothamBold
+ModeTitle.Text = "SELECT MODE"
+ModeTitle.TextColor3 = Color3.fromRGB(200, 220, 255)
+ModeTitle.TextSize = 12
+ModeTitle.Parent = ModeSelectFrame
+
+local MasteredBtn = Instance.new("TextButton")
+MasteredBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+MasteredBtn.Position = UDim2.new(0.05, 0, 0.35, 0)
+MasteredBtn.Size = UDim2.new(0.9, 0, 0, 20)
+MasteredBtn.Font = Enum.Font.Gotham
+MasteredBtn.Text = "🌟 MASTERED"
+MasteredBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MasteredBtn.TextSize = 11
+MasteredBtn.Parent = ModeSelectFrame
+
+local PerfectionBtn = Instance.new("TextButton")
+PerfectionBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
+PerfectionBtn.Position = UDim2.new(0.05, 0, 0.575, 0)
+PerfectionBtn.Size = UDim2.new(0.9, 0, 0, 20)
+PerfectionBtn.Font = Enum.Font.Gotham
+PerfectionBtn.Text = "💫 PERFECTION"
+PerfectionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PerfectionBtn.TextSize = 11
+PerfectionBtn.Parent = ModeSelectFrame
+
+local SuperBtn = Instance.new("TextButton")
+SuperBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+SuperBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
+SuperBtn.Size = UDim2.new(0.9, 0, 0, 20)
+SuperBtn.Font = Enum.Font.GothamBold
+SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ"
+SuperBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SuperBtn.TextSize = 10
+SuperBtn.Parent = ModeSelectFrame
+
+-- Stats Frame
+local StatsFrame = Instance.new("Frame")
+StatsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+StatsFrame.BorderSizePixel = 0
+StatsFrame.Position = UDim2.new(0.1, 0, 0.52, 0)
+StatsFrame.Size = UDim2.new(0.8, 0, 0, 70)
+StatsFrame.Parent = Frame
+
+local DodgeLabel = Instance.new("TextLabel")
+DodgeLabel.BackgroundTransparency = 1
+DodgeLabel.Position = UDim2.new(0.05, 0, 0.1, 0)
+DodgeLabel.Size = UDim2.new(0.9, 0, 0, 20)
+DodgeLabel.Font = Enum.Font.Gotham
+DodgeLabel.Text = "⚡ Dodges: 0"
+DodgeLabel.TextColor3 = Color3.fromRGB(150, 200, 255)
+DodgeLabel.TextSize = 13
+DodgeLabel.TextXAlignment = Enum.TextXAlignment.Left
+DodgeLabel.Parent = StatsFrame
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Position = UDim2.new(0.05, 0, 0.42, 0)
+SpeedLabel.Size = UDim2.new(0.9, 0, 0, 20)
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.Text = "💨 Speed: 2.5x"
+SpeedLabel.TextColor3 = Color3.fromRGB(150, 255, 200)
+SpeedLabel.TextSize = 13
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = StatsFrame
+
+local ModeLabel = Instance.new("TextLabel")
+ModeLabel.BackgroundTransparency = 1
+ModeLabel.Position = UDim2.new(0.05, 0, 0.74, 0)
+ModeLabel.Size = UDim2.new(0.9, 0, 0, 20)
+ModeLabel.Font = Enum.Font.Gotham
+ModeLabel.Text = "🌟 Mode: MASTERED"
+ModeLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+ModeLabel.TextSize = 13
+ModeLabel.TextXAlignment = Enum.TextXAlignment.Left
+ModeLabel.Parent = StatsFrame
+
+-- Toggle Button
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.75, 0)
+ToggleButton.Size = UDim2.new(0.8, 0, 0, 60)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Text = "AWAKEN"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 24
+ToggleButton.Parent = Frame
+
+-- WARNING SYSTEM
+local WarningFrame = Instance.new("Frame")
+WarningFrame.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+WarningFrame.BackgroundTransparency = 0.3
+WarningFrame.BorderSizePixel = 0
+WarningFrame.Position = UDim2.new(0.3, 0, 0.85, 0)
+WarningFrame.Size = UDim2.new(0.4, 0, 0, 50)
+WarningFrame.Visible = false
+WarningFrame.Parent = ScreenGui
+
+local WarningLabel = Instance.new("TextLabel")
+WarningLabel.BackgroundTransparency = 1
+WarningLabel.Size = UDim2.new(1, 0, 1, 0)
+WarningLabel.Font = Enum.Font.GothamBold
+WarningLabel.Text = "⚠️ DANGER CLOSE ⚠️"
+WarningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+WarningLabel.TextSize = 18
+WarningLabel.Parent = WarningFrame
+
+-- ADVANCED AURA FOR SUPERSKKSKSJSJSJ - FIXED
 local function createAura()
     local auraSize, auraColor
     
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        auraSize = 8  -- Small but powerful
-        auraColor = Color3.fromHSV(tick() % 1, 1, 1) -- Rainbow
+        auraSize = 8
+        auraColor = Color3.fromHSV(tick() % 1, 1, 1)
     elseif CURRENT_MODE == "PERFECTION" then
         auraSize = 8
         auraColor = Color3.fromRGB(255, 200, 255)
@@ -106,8 +272,7 @@ local function createAura()
     
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
         aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
-        aura.Transparency = 0.2  -- Semi-transparent for better visibility
-        aura.Material = Enum.Material.Neon
+        aura.Transparency = 0.2
     else
         aura.Color = auraColor
         aura.Transparency = 0.7
@@ -116,17 +281,14 @@ local function createAura()
     aura.Shape = Enum.PartType.Ball
     aura.Parent = FXFolder
     
-    -- SUPERSKKSKSJSJSJ GOD-LIKE EFFECTS
+    -- SUPERSKKSKSJSJSJ EFFECTS
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        -- Add point light
         local light = Instance.new("PointLight")
         light.Parent = aura
         light.Color = Color3.fromHSV(tick() % 1, 1, 1)
         light.Brightness = 5
         light.Range = 15
-        light.Shadows = false
         
-        -- Add subtle particles
         local particles = Instance.new("ParticleEmitter")
         particles.Parent = aura
         particles.Texture = "rbxassetid://242719275"
@@ -137,8 +299,6 @@ local function createAura()
         particles.Transparency = NumberSequence.new(0.3, 1)
         particles.Color = ColorSequence.new(Color3.fromHSV(tick() % 1, 1, 1))
         particles.Rotation = NumberRange.new(0, 360)
-        particles.VelocityInheritance = 0
-        particles.EmissionDirection = Enum.NormalId.Top
     end
     
     local mesh = Instance.new("SpecialMesh")
@@ -149,39 +309,31 @@ local function createAura()
     return aura
 end
 
--- ADVANCED FLING DETECTION FUNCTION
+-- ADVANCED FLING DETECTION
 local function isRealFling(currentVelocity, lastVel, deltaTime)
-    -- Check 1: High velocity magnitude
     local velocityMagnitude = currentVelocity.Magnitude
     
-    -- Check 2: Sudden acceleration (velocity change)
     local acceleration = (currentVelocity - lastVel) / deltaTime
     local accelerationMagnitude = acceleration.Magnitude
     
-    -- Check 3: Not moving intentionally
     local isMovingIntentionally = Humanoid.MoveDirection.Magnitude > 0.5
     
-    -- Check 4: Vertical velocity check (flings often have high vertical component)
     local verticalVelocity = math.abs(currentVelocity.Y)
     
-    -- Check 5: Direction change (flings often come from unexpected directions)
     local directionDot = 0
     if Humanoid.MoveDirection.Magnitude > 0.1 then
         directionDot = currentVelocity.Unit:Dot(Humanoid.MoveDirection.Unit)
     end
     
-    -- Different thresholds per mode
     if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        -- Ultra-sensitive for SUPERSKKSKSJSJSJ
         return (velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and 
                 accelerationMagnitude > ACCELERATION_THRESHOLD[CURRENT_MODE]) or
-               (verticalVelocity > 100 and velocityMagnitude > 200)  -- Also detect vertical flings
+               (verticalVelocity > 100 and velocityMagnitude > 200)
     else
-        -- Normal mode detection
         return velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and 
                accelerationMagnitude > ACCELERATION_THRESHOLD[CURRENT_MODE] and
                not isMovingIntentionally and
-               directionDot < 0.7  -- Velocity not in same direction as movement
+               directionDot < 0.7
     end
 end
 
@@ -189,17 +341,14 @@ end
 local function applyAntiFlingForce(currentVelocity)
     if not antiFlingActive or CURRENT_MODE ~= "SUPERSKKSKSJSJSJ" then return end
     
-    -- Only apply anti-fling if velocity is high (indicating fling)
     if currentVelocity.Magnitude > 200 then
         for _, part in pairs(Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 local vel = part.Velocity
                 if vel.Magnitude > 50 then
-                    -- Counter the fling with opposite force
                     local counterForce = -vel.Unit * ANTI_FLING_FORCE[CURRENT_MODE] * 0.01
                     part:ApplyImpulse(counterForce)
                     
-                    -- Add slight stabilization
                     part.Velocity = part.Velocity * 0.5
                     part.RotVelocity = Vector3.new(0, 0, 0)
                 end
@@ -274,7 +423,6 @@ local function createDodgeEffect(position)
     part.Shape = Enum.PartType.Ball
     part.Parent = FXFolder
     
-    -- Lightning ring
     for i = 1, boltCount do
         local lightning = Instance.new("Part")
         lightning.Size = Vector3.new(0.3, 6, 0.3)
@@ -319,7 +467,7 @@ local function checkProximity()
     end
 end
 
--- MAIN DODGE SYSTEM - ADVANCED FLING DETECTION
+-- MAIN DODGE SYSTEM
 local function startUI()
     if DodgeConnection then DodgeConnection:Disconnect() end
     if AuraConnection then AuraConnection:Disconnect() end
@@ -328,7 +476,7 @@ local function startUI()
     if ModeEffectConnection then ModeEffectConnection:Disconnect() end
     if AntiFlingConnection then AntiFlingConnection:Disconnect() end
     
-    -- Speed boost (ALL MODES 2.5x)
+    -- Speed boost
     Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
     SpeedLabel.Text = "💨 Speed: 2.5x"
     
@@ -339,7 +487,6 @@ local function startUI()
         aura.Position = RootPart.Position
         aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(10), 0)
         
-        -- Rainbow effect for SUPERSKKSKSJSJSJ
         if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
             aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
             if aura:FindFirstChild("PointLight") then
@@ -350,7 +497,6 @@ local function startUI()
             end
         end
         
-        -- Pulse effect
         local pulseSpeed = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 8 or 5
         local pulseIntensity = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 0.2 or 0.1
         local scale = 1 + math.sin(tick() * pulseSpeed) * pulseIntensity
@@ -380,7 +526,7 @@ local function startUI()
         end)
     end
     
-    -- ADVANCED DODGE SYSTEM WITH REAL FLING DETECTION
+    -- ADVANCED DODGE SYSTEM
     local lastPosition = RootPart.Position
     lastVelocity = RootPart.Velocity
     lastCheckTime = tick()
@@ -392,10 +538,8 @@ local function startUI()
         local deltaTime = currentTime - lastCheckTime
         local currentVelocity = RootPart.Velocity
         
-        -- Check if enough time has passed since last dodge
         local canDodge = (currentTime - lastDodgeTime) > DODGE_COOLDOWN[CURRENT_MODE]
         
-        -- ADVANCED FLING DETECTION
         if canDodge and isRealFling(currentVelocity, lastVelocity, deltaTime) then
             dodgeCount = dodgeCount + 1
             DodgeLabel.Text = "⚡ Dodges: " .. dodgeCount
@@ -404,10 +548,8 @@ local function startUI()
             local dodgeFrom = RootPart.Position
             local dodgeDirection = -currentVelocity.Unit
             
-            -- Calculate dodge position
             local dodgePosition = lastPosition + (dodgeDirection * DODGE_DISTANCE[CURRENT_MODE])
             
-            -- Keep Y position reasonable
             dodgePosition = Vector3.new(
                 dodgePosition.X,
                 math.clamp(dodgePosition.Y, lastPosition.Y - 10, lastPosition.Y + 10),
@@ -427,7 +569,6 @@ local function startUI()
                 antiFlingActive = false
             end
             
-            -- Reset velocities on all parts
             for _, part in pairs(Character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.Velocity = Vector3.new(0, 0, 0)
@@ -435,16 +576,12 @@ local function startUI()
                 end
             end
             
-            -- Create dodge effects
             createDodgeEffect(dodgeFrom)
             createDodgeEffect(dodgePosition)
             
-            -- Flash GUI
             Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             task.wait(0.05)
             
-            -- Set header color based on mode
             local headerColor
             if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
                 headerColor = Color3.fromHSV(tick() % 1, 1, 1)
@@ -454,10 +591,8 @@ local function startUI()
                 headerColor = Color3.fromRGB(150, 200, 255)
             end
             Header.BackgroundColor3 = headerColor
-            HeaderCover.BackgroundColor3 = headerColor
         end
         
-        -- Update tracking variables
         if currentVelocity.Magnitude < 100 then
             lastPosition = RootPart.Position
         end
@@ -471,11 +606,10 @@ local function startUI()
         AntiFlingConnection = RunService.Heartbeat:Connect(function()
             if not UI_ENABLED then return end
             
-            -- Mild velocity stabilization
             for _, part in pairs(Character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     local vel = part.Velocity
-                    if vel.Magnitude > 300 then  -- Only stabilize extreme velocities
+                    if vel.Magnitude > 300 then
                         part.Velocity = vel * 0.95
                     end
                 end
@@ -496,7 +630,6 @@ local function stopUI()
     WarningFrame.Visible = false
     antiFlingActive = false
     
-    -- Remove effects
     for _, v in pairs(FXFolder:GetChildren()) do
         v:Destroy()
     end
@@ -546,17 +679,15 @@ ToggleButton.MouseButton1Click:Connect(function()
         ToggleButton.Text = CURRENT_MODE
         local headerColor = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
             (CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or Color3.fromRGB(100, 200, 255))
-        ButtonGradient.Color = ColorSequence.new(headerColor, headerColor)
+        ToggleButton.BackgroundColor3 = headerColor
         Header.BackgroundColor3 = headerColor
-        HeaderCover.BackgroundColor3 = headerColor
         StatusLabel.Text = "⚡ ACTIVE ⚡"
         StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
         startUI()
     else
         ToggleButton.Text = "AWAKEN"
-        ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
         Header.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
-        HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
         StatusLabel.Text = "🔴 DORMANT 🔴"
         StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         Frame.BorderColor3 = Color3.fromRGB(200, 200, 255)
@@ -579,21 +710,8 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     end
 end)
 
-print("⚡🔥 SUPER'S ULTRA INSTINCT - ADVANCED FLING DETECTION LOADED 🔥⚡")
-print("ALL MODES: 2.5x Speed Boost (Safe & Balanced)")
-print("ADVANCED FLING DETECTION FEATURES:")
-print("- Velocity threshold checks (150-300)")
-print("- Acceleration detection (300-700)")
-print("- Vertical fling detection")
-print("- Movement direction analysis")
-print("- No false positives from normal movement")
-print("")
-print("SUPERSKKSKSJSJSJ MODE:")
-print("- Small but powerful 8-stud aura")
-print("- PointLight + Particle effects")
-print("- Ultra-sensitive fling detection (150 velocity)")
-print("- 10,000 Anti-Fling Force")
-print("- No dodge cooldown")
-print("- Instant response to real flings")
-print("")
-print("Select mode then click AWAKEN!")
+print("✅ SUPER'S ULTRA INSTINCT LOADED SUCCESSFULLY!")
+print("⚡ 3 MODES AVAILABLE: MASTERED, PERFECTION, SUPERSKKSKSJSJSJ")
+print("⚡ ALL MODES: 2.5x Speed Boost")
+print("⚡ SUPERSKKSKSJSJSJ: Advanced fling detection with god-like aura")
+print("⚡ GUI: Click AWAKEN to activate!")
