@@ -1,4 +1,4 @@
--- GOD'S ULTRA INSTINCT - PURE DEFENSE EDITION
+-- GOD'S ULTRA INSTINCT - PURE DEFENSE EDITION (FIXED VERSION)
 -- Ultra Instinct focused purely on dodging and defense
 
 local Players = game:GetService("Players")
@@ -9,7 +9,9 @@ local Debris = game:GetService("Debris")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- Wait for player to fully load
+local Character = LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
@@ -39,7 +41,6 @@ local SPEED_BOOST = {
     ULTRA_GOD = 12.0
 }
 
-local PROXIMITY_RANGE = 20
 local AFTERIMAGE_INTERVAL = {
     MASTERED = 0.06,
     PERFECTION = 0.04,
@@ -47,63 +48,18 @@ local AFTERIMAGE_INTERVAL = {
     ULTRA_GOD = 0.001
 }
 
--- NEW: PREDICTIVE DODGE SYSTEM
-local PREDICTION_TIME = {
-    MASTERED = 0.1,
-    PERFECTION = 0.2,
-    SUPERSKKSKSJSJSJ = 0.5,
-    ULTRA_GOD = 1.0
-}
-
-local DODGE_CHAIN_BONUS = {
-    MASTERED = 1.0,
-    PERFECTION = 1.2,
-    SUPERSKKSKSJSJSJ = 1.5,
-    ULTRA_GOD = 2.0
-}
-
--- NEW: INVINCIBILITY FRAMES
-local IFRAME_DURATION = {
-    MASTERED = 0.2,
-    PERFECTION = 0.3,
-    SUPERSKKSKSJSJSJ = 0.5,
-    ULTRA_GOD = 1.0
-}
-
--- NEW: ENERGY SHIELD SYSTEM
-local SHIELD_HEALTH = {
-    MASTERED = 100,
-    PERFECTION = 250,
-    SUPERSKKSKSJSJSJ = 1000,
-    ULTRA_GOD = 5000
-}
-
--- NEW: MULTI-DODGE CAPABILITY
-local MAX_CHAIN_DODGES = {
-    MASTERED = 2,
-    PERFECTION = 3,
-    SUPERSKKSKSJSJSJ = 5,
-    ULTRA_GOD = 10
-}
-
--- DEFENSE VARIABLES
+-- TRACKING
 local dodgeCount = 0
 local dodgeChain = 0
 local lastAfterimage = 0
-local shieldHealth = 0
-local shieldActive = false
+local shieldHealth = 100
+local shieldActive = true
 local iframeActive = false
-local predictiveDodgeActive = false
 local lastPerfectDodge = 0
 local perfectDodgeStreak = 0
 
--- TRACKING
-local incomingAttacks = {}
-local threatLevel = 0
-local threatDirection = Vector3.new()
-
 -- Connections
-local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection
+local DodgeConnection, AuraConnection, AfterimageConnection
 local PredictionConnection, ShieldConnection, ThreatAnalysisConnection
 
 -- Effects Folder
@@ -271,16 +227,16 @@ ShieldLabel.TextSize = 13
 ShieldLabel.TextXAlignment = Enum.TextXAlignment.Left
 ShieldLabel.Parent = StatsFrame
 
-local ThreatLabel = Instance.new("TextLabel")
-ThreatLabel.BackgroundTransparency = 1
-ThreatLabel.Position = UDim2.new(0.05, 0, 0.85, 0)
-ThreatLabel.Size = UDim2.new(0.9, 0, 0, 20)
-ThreatLabel.Font = Enum.Font.Gotham
-ThreatLabel.Text = "⚠️ Threat: 0%"
-ThreatLabel.TextColor3 = Color3.fromRGB(255, 150, 150)
-ThreatLabel.TextSize = 13
-ThreatLabel.TextXAlignment = Enum.TextXAlignment.Left
-ThreatLabel.Parent = StatsFrame
+local ModeLabel = Instance.new("TextLabel")
+ModeLabel.BackgroundTransparency = 1
+ModeLabel.Position = UDim2.new(0.05, 0, 0.85, 0)
+ModeLabel.Size = UDim2.new(0.9, 0, 0, 20)
+ModeLabel.Font = Enum.Font.Gotham
+ModeLabel.Text = "🌟 Mode: MASTERED"
+ModeLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+ModeLabel.TextSize = 13
+ModeLabel.TextXAlignment = Enum.TextXAlignment.Left
+ModeLabel.Parent = StatsFrame
 
 -- Toggle Button
 local ToggleButton = Instance.new("TextButton")
@@ -293,436 +249,187 @@ ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.TextSize = 22
 ToggleButton.Parent = Frame
 
--- NEW: PREDICTIVE DODGE VISUAL
-local PredictionIndicator = Instance.new("Frame")
-PredictionIndicator.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-PredictionIndicator.BackgroundTransparency = 0.7
-PredictionIndicator.BorderSizePixel = 0
-PredictionIndicator.Size = UDim2.new(0, 10, 0, 10)
-PredictionIndicator.AnchorPoint = Vector2.new(0.5, 0.5)
-PredictionIndicator.Position = UDim2.new(0.5, 0, 0.5, 0)
-PredictionIndicator.Visible = false
-PredictionIndicator.Parent = ScreenGui
+-- Fix: Add UIStroke for better visibility
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
+UIStroke.Thickness = 2
+UIStroke.Parent = Frame
 
--- NEW: SHIELD VISUAL
-local ShieldVisual = Instance.new("Part")
-ShieldVisual.Name = "EnergyShield"
-ShieldVisual.Shape = Enum.PartType.Ball
-ShieldVisual.Material = Enum.Material.Neon
-ShieldVisual.Transparency = 0.7
-ShieldVisual.Anchored = true
-ShieldVisual.CanCollide = false
-ShieldVisual.Visible = false
-ShieldVisual.Parent = FXFolder
+-- FIXED: Clear existing connections properly
+local function clearConnections()
+    if DodgeConnection then DodgeConnection:Disconnect() DodgeConnection = nil end
+    if AuraConnection then AuraConnection:Disconnect() AuraConnection = nil end
+    if AfterimageConnection then AfterimageConnection:Disconnect() AfterimageConnection = nil end
+    if PredictionConnection then PredictionConnection:Disconnect() PredictionConnection = nil end
+    if ShieldConnection then ShieldConnection:Disconnect() ShieldConnection = nil end
+    if ThreatAnalysisConnection then ThreatAnalysisConnection:Disconnect() ThreatAnalysisConnection = nil end
+end
 
--- NEW: GODLY AURA SYSTEM
-local function createDivineAura()
-    local auraSize, auraColor
+-- SIMPLIFIED AURA
+local auraPart = nil
+local function createAura()
+    if auraPart then auraPart:Destroy() auraPart = nil end
     
-    if CURRENT_MODE == "ULTRA_GOD" then
-        auraSize = 15
-        auraColor = Color3.fromRGB(255, 255, 255)
-    elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        auraSize = 12
-        auraColor = Color3.fromHSV(tick() % 1, 1, 1)
-    elseif CURRENT_MODE == "PERFECTION" then
-        auraSize = 10
-        auraColor = Color3.fromRGB(200, 150, 255)
-    else
-        auraSize = 8
-        auraColor = Color3.fromRGB(100, 150, 255)
-    end
+    local auraSize = CURRENT_MODE == "ULTRA_GOD" and 15 or
+                     CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 12 or
+                     CURRENT_MODE == "PERFECTION" and 10 or 8
     
-    local aura = Instance.new("Part")
-    aura.Name = "DivineAura"
-    aura.Size = Vector3.new(auraSize, auraSize, auraSize)
-    aura.Position = RootPart.Position
-    aura.Anchored = true
-    aura.CanCollide = false
-    aura.Material = Enum.Material.Neon
-    aura.Color = auraColor
-    aura.Transparency = 0.3
-    aura.Shape = Enum.PartType.Ball
-    aura.Parent = FXFolder
+    auraPart = Instance.new("Part")
+    auraPart.Name = "DivineAura"
+    auraPart.Size = Vector3.new(auraSize, auraSize, auraSize)
+    auraPart.Position = RootPart.Position
+    auraPart.Anchored = true
+    auraPart.CanCollide = false
+    auraPart.Material = Enum.Material.Neon
+    auraPart.Transparency = 0.3
+    auraPart.Shape = Enum.PartType.Ball
+    auraPart.Parent = FXFolder
     
-    -- Divine effects
     local light = Instance.new("PointLight")
-    light.Parent = aura
-    light.Color = auraColor
-    light.Brightness = 10
-    light.Range = 25
+    light.Brightness = 5
+    light.Range = 20
+    light.Parent = auraPart
     
-    -- Energy particles
-    local particles = Instance.new("ParticleEmitter")
-    particles.Parent = aura
-    particles.Texture = "rbxassetid://242719275"
-    particles.Rate = 50
-    particles.Lifetime = NumberRange.new(0.5, 1.5)
-    particles.Speed = NumberRange.new(5, 15)
-    particles.Size = NumberSequence.new(0.2, 0.5)
-    particles.Transparency = NumberSequence.new(0.3, 1)
-    particles.Color = ColorSequence.new(auraColor)
-    particles.Rotation = NumberRange.new(0, 360)
-    
-    if CURRENT_MODE == "ULTRA_GOD" then
-        -- Divine light beams
-        for i = 1, 8 do
-            local beam = Instance.new("Part")
-            beam.Size = Vector3.new(0.5, 20, 0.5)
-            beam.Color = Color3.fromRGB(255, 255, 255)
-            beam.Material = Enum.Material.Neon
-            beam.Transparency = 0.4
-            beam.Anchored = true
-            beam.CanCollide = false
-            beam.Parent = aura
-            
-            local angle = (i / 8) * math.pi * 2
-            beam.CFrame = aura.CFrame * CFrame.new(0, 10, 0) * CFrame.Angles(0, angle, 0)
-            
-            TweenService:Create(beam, TweenInfo.new(0.5), {Transparency = 1}):Play()
-            Debris:AddItem(beam, 0.5)
-        end
-    end
-    
-    return aura
+    return auraPart
 end
 
--- NEW: PREDICTIVE DODGE SYSTEM
-local function predictThreats()
-    if not UI_ENABLED then return end
-    
-    local threats = {}
-    local maxThreat = 0
-    threatDirection = Vector3.new()
-    
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local target = player.Character:FindFirstChild("HumanoidRootPart")
-            if target then
-                local direction = (target.Position - RootPart.Position)
-                local distance = direction.Magnitude
-                
-                if distance < 50 then
-                    local velocity = target.Velocity
-                    local predictedPosition = target.Position + velocity * PREDICTION_TIME[CURRENT_MODE]
-                    local predictedDirection = (predictedPosition - RootPart.Position)
-                    local speed = velocity.Magnitude
-                    
-                    local threat = math.min(100, (100 / distance) * speed)
-                    if threat > maxThreat then
-                        maxThreat = threat
-                        threatDirection = predictedDirection.Unit
-                    end
-                    
-                    table.insert(threats, {
-                        position = target.Position,
-                        velocity = velocity,
-                        threat = threat
-                    })
-                end
-            end
-        end
-    end
-    
-    threatLevel = maxThreat
-    ThreatLabel.Text = string.format("⚠️ Threat: %d%%", math.floor(threatLevel))
-    
-    -- Update prediction indicator
-    if threatLevel > 30 and threatDirection.Magnitude > 0 then
-        local screenPoint = Workspace.CurrentCamera:WorldToViewportPoint(
-            RootPart.Position + threatDirection * 10
-        )
-        PredictionIndicator.Position = UDim2.new(0, screenPoint.X, 0, screenPoint.Y)
-        PredictionIndicator.Visible = true
-        
-        local color = Color3.fromRGB(
-            math.clamp(threatLevel * 2.55, 0, 255),
-            math.clamp(255 - threatLevel * 2.55, 0, 255),
-            0
-        )
-        PredictionIndicator.BackgroundColor3 = color
-    else
-        PredictionIndicator.Visible = false
-    end
-    
-    incomingAttacks = threats
-end
-
--- NEW: PERFECT DODGE DETECTION
-local function isPerfectDodge(threatLevel, distance)
-    if threatLevel > 80 then
-        return "PERFECT"
-    elseif threatLevel > 50 then
-        return "GOOD"
-    else
-        return "NORMAL"
-    end
-end
-
--- NEW: MULTI-DODGE CAPABILITY
-local function performChainDodge(basePosition)
-    if dodgeChain >= MAX_CHAIN_DODGES[CURRENT_MODE] then
-        dodgeChain = 0
-        return
-    end
-    
-    local chainMultiplier = 1 + (dodgeChain * DODGE_CHAIN_BONUS[CURRENT_MODE])
-    local chainDistance = DODGE_DISTANCE[CURRENT_MODE] * chainMultiplier
-    
-    -- Find safest direction for chain dodge
-    local safeDirection = Vector3.new()
-    local maxSafety = 0
-    
-    for angle = 0, 360, 45 do
-        local rad = math.rad(angle)
-        local testDir = Vector3.new(math.cos(rad), 0, math.sin(rad))
-        local safety = 0
-        
-        for _, threat in pairs(incomingAttacks) do
-            local dot = testDir:Dot((threat.position - RootPart.Position).Unit)
-            if dot < 0 then
-                safety = safety + 10
-            end
-        end
-        
-        if safety > maxSafety then
-            maxSafety = safety
-            safeDirection = testDir
-        end
-    end
-    
-    if safeDirection.Magnitude == 0 then
-        safeDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)).Unit
-    end
-    
-    local dodgePos = RootPart.Position + (safeDirection * chainDistance)
-    dodgePos = Vector3.new(
-        dodgePos.X,
-        RootPart.Position.Y,
-        dodgePos.Z
-    )
-    
-    RootPart.CFrame = CFrame.new(dodgePos)
-    createDodgeEffect(RootPart.Position)
-    dodgeChain = dodgeChain + 1
-    ChainLabel.Text = string.format("🔗 Chain: %d", dodgeChain)
-end
-
--- ENHANCED AFTERIMAGE EFFECT
+-- FIXED: AFTERIMAGE EFFECT
 local function createAfterimage()
     if tick() - lastAfterimage < AFTERIMAGE_INTERVAL[CURRENT_MODE] then
         return
     end
     
     lastAfterimage = tick()
-    local color
-    
-    if CURRENT_MODE == "ULTRA_GOD" then
-        color = Color3.fromRGB(255, 255, 255)
-    elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        color = Color3.fromHSV(math.random(), 1, 1)
-    elseif CURRENT_MODE == "PERFECTION" then
-        color = Color3.fromRGB(200, 150, 255)
-    else
-        color = Color3.fromRGB(100, 150, 255)
-    end
     
     for _, part in pairs(Character:GetDescendants()) do
-        if part:IsA("BasePart") and part.Transparency < 1 and part.Name ~= "HumanoidRootPart" then
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
             local clone = part:Clone()
             clone.Anchored = true
             clone.CanCollide = false
             clone.Material = Enum.Material.Neon
-            clone.Color = color
-            clone.Transparency = 0.3
+            clone.Transparency = 0.5
             clone.CFrame = part.CFrame
             clone.Parent = FXFolder
             
-            for _, child in pairs(clone:GetChildren()) do
-                if not child:IsA("SpecialMesh") then
-                    child:Destroy()
-                end
-            end
-            
-            TweenService:Create(clone, TweenInfo.new(0.4), {Transparency = 1}):Play()
-            Debris:AddItem(clone, 0.4)
+            TweenService:Create(clone, TweenInfo.new(0.3), {Transparency = 1}):Play()
+            Debris:AddItem(clone, 0.3)
         end
     end
 end
 
--- GODLY DODGE EFFECT
+-- FIXED: DODGE EFFECT
 local function createDodgeEffect(position)
-    local particleCount, effectSize
+    local effectSize = CURRENT_MODE == "ULTRA_GOD" and 8 or
+                       CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 6 or
+                       CURRENT_MODE == "PERFECTION" and 4 or 3
     
-    if CURRENT_MODE == "ULTRA_GOD" then
-        particleCount = 50
-        effectSize = 15
-    elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-        particleCount = 30
-        effectSize = 12
-    elseif CURRENT_MODE == "PERFECTION" then
-        particleCount = 20
-        effectSize = 10
-    else
-        particleCount = 15
-        effectSize = 8
-    end
-    
-    local color = CURRENT_MODE == "ULTRA_GOD" and Color3.fromRGB(255, 255, 255) or
-                  CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
-                  CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or
-                  Color3.fromRGB(100, 150, 255)
-    
-    -- Main burst
     local burst = Instance.new("Part")
     burst.Size = Vector3.new(effectSize, effectSize, effectSize)
     burst.Position = position
     burst.Anchored = true
     burst.CanCollide = false
     burst.Material = Enum.Material.Neon
-    burst.Color = color
-    burst.Transparency = 0.1
+    burst.Color = Color3.fromRGB(255, 255, 255)
+    burst.Transparency = 0.3
     burst.Shape = Enum.PartType.Ball
     burst.Parent = FXFolder
     
-    -- Energy particles
-    for i = 1, particleCount do
-        local particle = Instance.new("Part")
-        particle.Size = Vector3.new(0.5, 0.5, 0.5)
-        particle.Position = position
-        particle.Anchored = true
-        particle.CanCollide = false
-        particle.Material = Enum.Material.Neon
-        particle.Color = color
-        particle.Transparency = 0.2
-        particle.Parent = FXFolder
+    TweenService:Create(burst, TweenInfo.new(0.3), {
+        Size = Vector3.new(effectSize * 2, effectSize * 2, effectSize * 2),
+        Transparency = 1
+    }):Play()
+    Debris:AddItem(burst, 0.3)
+end
+
+-- FIXED: SIMPLIFIED DODGE SYSTEM
+local lastVelocity = Vector3.new(0, 0, 0)
+local lastCheckTime = tick()
+local lastDodgeTime = 0
+
+local function checkForDodge()
+    local currentTime = tick()
+    local deltaTime = currentTime - lastCheckTime
+    local currentVelocity = RootPart.Velocity
+    local velocityMagnitude = currentVelocity.Magnitude
+    
+    -- Check if we should dodge
+    if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and 
+       (currentTime - lastDodgeTime) > 0.2 then
         
-        local angle = math.rad((i / particleCount) * 360)
-        local distance = effectSize * 0.5
-        local targetPos = position + Vector3.new(
-            math.cos(angle) * distance,
-            math.sin(angle * 2) * distance * 0.5,
-            math.sin(angle) * distance
+        dodgeCount = dodgeCount + 1
+        DodgeLabel.Text = string.format("⚡ Dodges: %d", dodgeCount)
+        lastDodgeTime = currentTime
+        
+        -- Calculate dodge position
+        local dodgeFrom = RootPart.Position
+        local dodgeDirection = -currentVelocity.Unit
+        local dodgeDistance = DODGE_DISTANCE[CURRENT_MODE]
+        local dodgePosition = RootPart.Position + (dodgeDirection * dodgeDistance)
+        
+        -- Keep same Y position
+        dodgePosition = Vector3.new(
+            dodgePosition.X,
+            RootPart.Position.Y,
+            dodgePosition.Z
         )
         
-        TweenService:Create(particle, TweenInfo.new(0.3), {
-            Position = targetPos,
-            Transparency = 1,
-            Size = Vector3.new(0.1, 0.1, 0.1)
-        }):Play()
-        Debris:AddItem(particle, 0.3)
-    end
-    
-    TweenService:Create(burst, TweenInfo.new(0.5), {
-        Size = Vector3.new(effectSize * 3, effectSize * 3, effectSize * 3),
-        Transparency = 1
-    }):Play()
-    Debris:AddItem(burst, 0.5)
-    
-    -- Sound effect
-    if CURRENT_MODE == "ULTRA_GOD" then
-        local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://9125323595" -- Divine sound
-        sound.Volume = 1
-        sound.Parent = workspace
-        sound:Play()
-        Debris:AddItem(sound, 3)
-    end
-end
-
--- NEW: ACTIVATE INVINCIBILITY FRAMES
-local function activateIFrames()
-    iframeActive = true
-    
-    -- Make character semi-transparent
-    for _, part in pairs(Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.LocalTransparencyModifier = 0.5
+        -- Perform dodge
+        RootPart.CFrame = CFrame.new(dodgePosition)
+        RootPart.Velocity = Vector3.new(0, 0, 0)
+        
+        -- Create effects
+        createDodgeEffect(dodgeFrom)
+        createDodgeEffect(dodgePosition)
+        
+        -- Update UI
+        Header.BackgroundColor3 = Color3.fromRGB(255, 255, 100)
+        task.wait(0.1)
+        
+        -- Restore color
+        if CURRENT_MODE == "ULTRA_GOD" then
+            Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+            Header.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+        elseif CURRENT_MODE == "PERFECTION" then
+            Header.BackgroundColor3 = Color3.fromRGB(150, 100, 255)
+        else
+            Header.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
         end
     end
     
-    -- Invincibility effect
-    local iframeGlow = Instance.new("Part")
-    iframeGlow.Size = Vector3.new(10, 10, 10)
-    iframeGlow.Position = RootPart.Position
-    iframeGlow.Anchored = true
-    iframeGlow.CanCollide = false
-    iframeGlow.Material = Enum.Material.Neon
-    iframeGlow.Color = Color3.fromRGB(255, 255, 0)
-    iframeGlow.Transparency = 0.7
-    iframeGlow.Shape = Enum.PartType.Ball
-    iframeGlow.Parent = FXFolder
-    
-    TweenService:Create(iframeGlow, TweenInfo.new(IFRAME_DURATION[CURRENT_MODE]), {
-        Size = Vector3.new(20, 20, 20),
-        Transparency = 1
-    }):Play()
-    Debris:AddItem(iframeGlow, IFRAME_DURATION[CURRENT_MODE])
-    
-    task.wait(IFRAME_DURATION[CURRENT_MODE])
-    
-    iframeActive = false
-    for _, part in pairs(Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.LocalTransparencyModifier = 0
-        end
-    end
+    lastVelocity = currentVelocity
+    lastCheckTime = currentTime
 end
 
--- ENHANCED DODGE SYSTEM
+-- FIXED: START UI FUNCTION
 local function startUI()
-    if DodgeConnection then DodgeConnection:Disconnect() end
-    if AuraConnection then AuraConnection:Disconnect() end
-    if ProximityConnection then ProximityConnection:Disconnect() end
-    if AfterimageConnection then AfterimageConnection:Disconnect() end
-    if PredictionConnection then PredictionConnection:Disconnect() end
-    if ShieldConnection then ShieldConnection:Disconnect() end
-    if ThreatAnalysisConnection then ThreatAnalysisConnection:Disconnect() end
+    clearConnections()
     
-    -- Speed boost
+    -- Apply speed boost
     Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
     SpeedLabel.Text = string.format("💨 Speed: %.1fx", SPEED_BOOST[CURRENT_MODE])
     
-    -- Initialize shield
-    shieldHealth = SHIELD_HEALTH[CURRENT_MODE]
-    shieldActive = true
-    ShieldLabel.Text = string.format("🛡️ Shield: 100%%")
-    
     -- Create aura
-    local aura = createDivineAura()
+    createAura()
     
-    -- Aura pulse effect
+    -- Aura update connection
     AuraConnection = RunService.Heartbeat:Connect(function()
-        if not UI_ENABLED or not aura.Parent then return end
+        if not UI_ENABLED or not auraPart then return end
         
-        aura.Position = RootPart.Position
-        aura.CFrame = aura.CFrame * CFrame.Angles(0, math.rad(15), 0)
+        auraPart.Position = RootPart.Position
+        auraPart.CFrame = auraPart.CFrame * CFrame.Angles(0, math.rad(2), 0)
         
-        if CURRENT_MODE == "ULTRA_GOD" then
-            aura.Color = Color3.fromRGB(255, 255, 255)
-        elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-            aura.Color = Color3.fromHSV(tick() % 1, 1, 1)
+        -- Color cycling for special modes
+        if CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+            auraPart.Color = Color3.fromHSV((tick() % 2) * 0.5, 1, 1)
+        elseif CURRENT_MODE == "ULTRA_GOD" then
+            auraPart.Color = Color3.fromRGB(255, 255, 255)
+        else
+            auraPart.Color = Color3.fromRGB(100, 150, 255)
         end
-        
-        local pulseSpeed = CURRENT_MODE == "ULTRA_GOD" and 10 or
-                           CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 8 or 5
-        local pulseIntensity = CURRENT_MODE == "ULTRA_GOD" and 0.3 or 0.2
-        local scale = 1 + math.sin(tick() * pulseSpeed) * pulseIntensity
-        
-        local baseSize = CURRENT_MODE == "ULTRA_GOD" and 15 or
-                         CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 12 or
-                         CURRENT_MODE == "PERFECTION" and 10 or 8
-        
-        aura.Size = Vector3.new(baseSize * scale, baseSize * scale, baseSize * scale)
     end)
     
-    -- Threat prediction
-    PredictionConnection = RunService.Heartbeat:Connect(function()
-        if not UI_ENABLED then return end
-        predictThreats()
-    end)
-    
-    -- Afterimage trail
+    -- Afterimage connection
     AfterimageConnection = RunService.Heartbeat:Connect(function()
         if not UI_ENABLED then return end
         if Humanoid.MoveDirection.Magnitude > 0 then
@@ -730,276 +437,88 @@ local function startUI()
         end
     end)
     
-    -- ULTRA GOD effects
-    if CURRENT_MODE == "ULTRA_GOD" then
-        ThreatAnalysisConnection = RunService.Heartbeat:Connect(function()
-            if not UI_ENABLED then return end
-            
-            -- Create divine trail
-            if tick() % 0.1 < 0.05 then
-                for _, part in pairs(Character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                        local spark = Instance.new("Part")
-                        spark.Size = Vector3.new(0.2, 0.2, 0.2)
-                        spark.Position = part.Position
-                        spark.Anchored = true
-                        spark.CanCollide = false
-                        spark.Material = Enum.Material.Neon
-                        spark.Color = Color3.fromRGB(255, 255, 255)
-                        spark.Transparency = 0.3
-                        spark.Parent = FXFolder
-                        
-                        TweenService:Create(spark, TweenInfo.new(0.5), {
-                            Transparency = 1,
-                            Size = Vector3.new(0, 0, 0)
-                        }):Play()
-                        Debris:AddItem(spark, 0.5)
-                    end
-                end
-            end
-        end)
-    end
-    
-    -- MAIN DODGE LOGIC
-    local lastPosition = RootPart.Position
-    lastVelocity = RootPart.Velocity
-    lastCheckTime = tick()
-    
+    -- Main dodge connection - SIMPLIFIED
     DodgeConnection = RunService.Heartbeat:Connect(function()
         if not UI_ENABLED then return end
-        
-        local currentTime = tick()
-        local deltaTime = currentTime - lastCheckTime
-        local currentVelocity = RootPart.Velocity
-        local velocityMagnitude = currentVelocity.Magnitude
-        
-        -- Check for threats that require dodging
-        local shouldDodge = false
-        local dodgeReason = ""
-        
-        -- Check velocity-based threats
-        if velocityMagnitude > VELOCITY_THRESHOLD[CURRENT_MODE] and not Humanoid.MoveDirection.Magnitude > 0.5 then
-            shouldDodge = true
-            dodgeReason = "VELOCITY"
-        end
-        
-        -- Check predicted threats
-        if threatLevel > 70 then
-            shouldDodge = true
-            dodgeReason = "PREDICTION"
-        end
-        
-        -- Check proximity to other players
-        for _, threat in pairs(incomingAttacks) do
-            local distance = (threat.position - RootPart.Position).Magnitude
-            if distance < 10 then
-                shouldDodge = true
-                dodgeReason = "PROXIMITY"
-                break
-            end
-        end
-        
-        if shouldDodge then
-            dodgeCount = dodgeCount + 1
-            DodgeLabel.Text = string.format("⚡ Dodges: %d", dodgeCount)
-            
-            -- Determine dodge quality
-            local dodgeQuality = isPerfectDodge(threatLevel, velocityMagnitude)
-            
-            if dodgeQuality == "PERFECT" then
-                perfectDodgeStreak = perfectDodgeStreak + 1
-                lastPerfectDodge = currentTime
-                
-                -- Activate invincibility frames for perfect dodges
-                if not iframeActive then
-                    activateIFrames()
-                end
-                
-                -- Chain dodge if available
-                if dodgeChain < MAX_CHAIN_DODGES[CURRENT_MODE] then
-                    performChainDodge(RootPart.Position)
-                end
-            else
-                perfectDodgeStreak = 0
-            end
-            
-            -- Calculate dodge position
-            local dodgeFrom = RootPart.Position
-            local dodgeDirection
-            
-            if dodgeReason == "PREDICTION" and threatDirection.Magnitude > 0 then
-                -- Dodge away from predicted threat
-                dodgeDirection = -threatDirection
-            else
-                -- Random safe direction
-                dodgeDirection = Vector3.new(
-                    math.random(-100, 100),
-                    0,
-                    math.random(-100, 100)
-                ).Unit
-            end
-            
-            local dodgeDistance = DODGE_DISTANCE[CURRENT_MODE] * (1 + (dodgeChain * 0.2))
-            local dodgePosition = RootPart.Position + (dodgeDirection * dodgeDistance)
-            
-            dodgePosition = Vector3.new(
-                dodgePosition.X,
-                RootPart.Position.Y,
-                dodgePosition.Z
-            )
-            
-            -- Perform the dodge
-            RootPart.CFrame = CFrame.new(dodgePosition)
-            RootPart.Velocity = Vector3.new(0, 0, 0)
-            RootPart.RotVelocity = Vector3.new(0, 0, 0)
-            
-            -- Create effects
-            createDodgeEffect(dodgeFrom)
-            createDodgeEffect(dodgePosition)
-            
-            -- Shield absorbs impact if active
-            if shieldActive then
-                local damage = math.min(velocityMagnitude * 0.1, 50)
-                shieldHealth = math.max(0, shieldHealth - damage)
-                local shieldPercent = math.floor((shieldHealth / SHIELD_HEALTH[CURRENT_MODE]) * 100)
-                ShieldLabel.Text = string.format("🛡️ Shield: %d%%", shieldPercent)
-                
-                if shieldHealth <= 0 then
-                    shieldActive = false
-                    ShieldLabel.Text = "🛡️ Shield: BROKEN"
-                end
-            end
-            
-            -- Visual feedback
-            Header.BackgroundColor3 = dodgeQuality == "PERFECT" and Color3.fromRGB(255, 255, 0) or
-                                      dodgeQuality == "GOOD" and Color3.fromRGB(100, 255, 100) or
-                                      Color3.fromRGB(100, 200, 255)
-            
-            task.wait(0.1)
-            
-            -- Restore header color
-            if CURRENT_MODE == "ULTRA_GOD" then
-                Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
-                Header.BackgroundColor3 = Color3.fromHSV(tick() % 1, 1, 1)
-            else
-                Header.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
-            end
-        end
-        
-        -- Reset dodge chain if too much time passes
-        if currentTime - lastPerfectDodge > 2 then
-            dodgeChain = 0
-            ChainLabel.Text = "🔗 Chain: 0"
-        end
-        
-        lastVelocity = currentVelocity
-        lastCheckTime = currentTime
+        checkForDodge()
     end)
     
-    -- SHIELD REGENERATION
-    ShieldConnection = RunService.Heartbeat:Connect(function()
-        if not UI_ENABLED then return end
-        
-        if shieldHealth < SHIELD_HEALTH[CURRENT_MODE] then
-            local regenRate = CURRENT_MODE == "ULTRA_GOD" and 20 or
-                              CURRENT_MODE == "SUPERSKKSKSJSJSJ" and 10 or 5
-            shieldHealth = math.min(SHIELD_HEALTH[CURRENT_MODE], shieldHealth + regenRate * 0.016)
-            
-            if not shieldActive then
-                shieldActive = true
-            end
-            
-            local shieldPercent = math.floor((shieldHealth / SHIELD_HEALTH[CURRENT_MODE]) * 100)
-            ShieldLabel.Text = string.format("🛡️ Shield: %d%%", shieldPercent)
-        end
-    end)
+    print("✅ Ultra Instinct Activated - Mode:", CURRENT_MODE)
 end
 
+-- FIXED: STOP UI FUNCTION
 local function stopUI()
-    if DodgeConnection then DodgeConnection:Disconnect() end
-    if AuraConnection then AuraConnection:Disconnect() end
-    if ProximityConnection then ProximityConnection:Disconnect() end
-    if AfterimageConnection then AfterimageConnection:Disconnect() end
-    if PredictionConnection then PredictionConnection:Disconnect() end
-    if ShieldConnection then ShieldConnection:Disconnect() end
-    if ThreatAnalysisConnection then ThreatAnalysisConnection:Disconnect() end
+    clearConnections()
     
+    -- Reset speed
     Humanoid.WalkSpeed = 16
-    PredictionIndicator.Visible = false
-    ShieldVisual.Visible = false
-    shieldActive = false
-    iframeActive = false
-    dodgeChain = 0
+    
+    -- Clear effects
+    if auraPart then
+        auraPart:Destroy()
+        auraPart = nil
+    end
     
     for _, v in pairs(FXFolder:GetChildren()) do
         v:Destroy()
     end
+    
+    print("❌ Ultra Instinct Deactivated")
 end
 
--- MODE SELECTION
+-- FIXED: MODE SELECTION
 MasteredBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "MASTERED"
-    ChainLabel.Text = "🔗 Chain: 0"
-    SpeedLabel.Text = "💨 Speed: 3.0x"
-    Frame.BorderColor3 = Color3.fromRGB(100, 200, 255)
-    if UI_ENABLED then
-        stopUI()
-        task.wait(0.1)
-        startUI()
-    end
+    ModeLabel.Text = "🌟 Mode: MASTERED"
+    Frame.BorderColor3 = Color3.fromRGB(100, 150, 255)
+    print("Mode changed to: MASTERED")
 end)
 
 PerfectionBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "PERFECTION"
-    ChainLabel.Text = "🔗 Chain: 0"
-    SpeedLabel.Text = "💨 Speed: 4.5x"
-    Frame.BorderColor3 = Color3.fromRGB(200, 150, 255)
-    if UI_ENABLED then
-        stopUI()
-        task.wait(0.1)
-        startUI()
-    end
+    ModeLabel.Text = "💫 Mode: PERFECTION"
+    Frame.BorderColor3 = Color3.fromRGB(150, 100, 255)
+    print("Mode changed to: PERFECTION")
 end)
 
 SuperBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "SUPERSKKSKSJSJSJ"
-    ChainLabel.Text = "🔗 Chain: 0"
-    SpeedLabel.Text = "💨 Speed: 7.0x"
-    if UI_ENABLED then
-        stopUI()
-        task.wait(0.1)
-        startUI()
-    end
+    ModeLabel.Text = "💥 Mode: SUPERSKKSKSJSJSJ"
+    Frame.BorderColor3 = Color3.fromRGB(255, 50, 150)
+    print("Mode changed to: SUPERSKKSKSJSJSJ")
 end)
 
 UltraBtn.MouseButton1Click:Connect(function()
     CURRENT_MODE = "ULTRA_GOD"
-    ChainLabel.Text = "🔗 Chain: 0"
-    SpeedLabel.Text = "💨 Speed: 12.0x"
-    Frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    if UI_ENABLED then
-        stopUI()
-        task.wait(0.1)
-        startUI()
-    end
+    ModeLabel.Text = "🌟 Mode: ULTRA GOD"
+    Frame.BorderColor3 = Color3.fromRGB(255, 255, 50)
+    print("Mode changed to: ULTRA GOD")
 end)
 
--- TOGGLE BUTTON
+-- FIXED: TOGGLE BUTTON
 ToggleButton.MouseButton1Click:Connect(function()
     UI_ENABLED = not UI_ENABLED
+    
     if UI_ENABLED then
-        ToggleButton.Text = "ACTIVE"
+        ToggleButton.Text = "DEACTIVATE"
+        StatusLabel.Text = "⚡ ACTIVE ⚡"
+        StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         
-        local headerColor = CURRENT_MODE == "ULTRA_GOD" and Color3.fromRGB(255, 255, 255) or
-                            CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
-                            CURRENT_MODE == "PERFECTION" and Color3.fromRGB(200, 150, 255) or
-                            Color3.fromRGB(100, 200, 255)
+        -- Update button color based on mode
+        if CURRENT_MODE == "ULTRA_GOD" then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 50)
+            Header.BackgroundColor3 = Color3.fromRGB(255, 255, 50)
+        elseif CURRENT_MODE == "SUPERSKKSKSJSJSJ" then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+            Header.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+        elseif CURRENT_MODE == "PERFECTION" then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 100, 255)
+            Header.BackgroundColor3 = Color3.fromRGB(150, 100, 255)
+        else
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+            Header.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+        end
         
-        ToggleButton.BackgroundColor3 = headerColor
-        Header.BackgroundColor3 = headerColor
-        StatusLabel.Text = "⚡ GOD MODE ACTIVE ⚡"
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
         startUI()
     else
         ToggleButton.Text = "ACTIVATE DEFENSE"
@@ -1007,34 +526,37 @@ ToggleButton.MouseButton1Click:Connect(function()
         Header.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
         StatusLabel.Text = "🔴 DORMANT 🔴"
         StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        Frame.BorderColor3 = Color3.fromRGB(100, 200, 255)
         stopUI()
     end
 end)
 
--- Character respawn
+-- FIXED: CHARACTER RESPAWN HANDLING
 LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
     Humanoid = char:WaitForChild("Humanoid")
     RootPart = char:WaitForChild("HumanoidRootPart")
+    
+    -- Reset stats
     dodgeCount = 0
     dodgeChain = 0
     DodgeLabel.Text = "⚡ Dodges: 0"
     ChainLabel.Text = "🔗 Chain: 0"
-    lastVelocity = Vector3.new(0, 0, 0)
-    shieldHealth = SHIELD_HEALTH[CURRENT_MODE]
-    shieldActive = false
-    task.wait(0.5)
+    
+    -- Clear existing effects
+    clearConnections()
+    if auraPart then auraPart:Destroy() auraPart = nil end
+    
+    -- Restart UI if it was active
     if UI_ENABLED then
+        task.wait(0.5) -- Wait for character to fully load
         startUI()
     end
 end)
 
-print("✅ GOD'S ULTRA INSTINCT LOADED SUCCESSFULLY!")
-print("⚡ PURE DEFENSE MODE - NO ATTACKS")
-print("🌟 4 DEFENSE MODES AVAILABLE")
-print("🛡️ Energy Shield System Active")
-print("⚡ Predictive Dodge System Enabled")
-print("💫 Chain Dodging Available")
-print("🌟 ULTRA GOD: Maximum defense capabilities")
-print("🎮 GUI: Click 'ACTIVATE DEFENSE' to begin!")
+-- Initial setup
+print("=" .. string.rep("=", 50))
+print("⚡ GOD'S ULTRA INSTINCT LOADED SUCCESSFULLY! ⚡")
+print("🌟 MODES: MASTERED | PERFECTION | SUPERSKKSKSJSJSJ | ULTRA GOD")
+print("⚡ PURE DEFENSE SYSTEM - AUTO-DODGE ONLY")
+print("🎮 SELECT A MODE THEN CLICK 'ACTIVATE DEFENSE'")
+print("=" .. string.rep("=", 50))
