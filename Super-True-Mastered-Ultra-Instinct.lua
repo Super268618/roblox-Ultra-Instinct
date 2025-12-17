@@ -1,5 +1,5 @@
--- THE STRONGEST ULTRA INSTINCT - SMALL GOD-LIKE EDITION --
--- Modified: Compact Aura, White/Silver Glow, Intense Shimmer --
+-- THE STRONGEST ULTRA INSTINCT - ABSOLUTE MAXIMUM
+-- 2.5x Speed with COMPACT GOD AURA and FTL DODGE
 -- Place in StarterPlayer → StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -15,15 +15,16 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 -- STRONGEST UI SETTINGS
 local UI_ENABLED = false
-local VELOCITY_THRESHOLD = 50
-local DODGE_DISTANCE = 35
+local VELOCITY_THRESHOLD = 30
+local DODGE_DISTANCE = 50 -- FTL Distance
 local SPEED_BOOST = 2.5
 local PROXIMITY_RANGE = 20
-local AFTERIMAGE_INTERVAL = 0.04
-local PREDICTION_RANGE = 18
+local AFTERIMAGE_INTERVAL = 0.03
+local PREDICTION_RANGE = 25
 local COUNTER_ENABLED = true
 local INVINCIBILITY_FRAMES = true
 local SHOCKWAVE_ENABLED = true
+local FTL_DODGE = true -- Faster than light dodge
 
 -- Connections
 local DodgeConnection, AuraConnection, ProximityConnection, AfterimageConnection, PredictionConnection, BarrierConnection
@@ -44,7 +45,7 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
 Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
-Frame.BorderColor3 = Color3.fromRGB(200, 240, 255) -- Lighter border
+Frame.BorderColor3 = Color3.fromRGB(150, 200, 255)
 Frame.BorderSizePixel = 4
 Frame.Position = UDim2.new(0.35, 0, 0.22, 0)
 Frame.Size = UDim2.new(0, 300, 0, 340)
@@ -62,7 +63,7 @@ UIGradient.Rotation = 45
 UIGradient.Parent = Frame
 
 local Header = Instance.new("Frame")
-Header.BackgroundColor3 = Color3.fromRGB(200, 240, 255) -- Godly White/Blue
+Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
 Header.BorderSizePixel = 0
 Header.Size = UDim2.new(1, 0, 0, 45)
 Header.Parent = Frame
@@ -72,7 +73,7 @@ HeaderCorner.CornerRadius = UDim.new(0, 18)
 HeaderCorner.Parent = Header
 
 local HeaderCover = Instance.new("Frame")
-HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
+HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
 HeaderCover.BorderSizePixel = 0
 HeaderCover.Position = UDim2.new(0, 0, 0.5, 0)
 HeaderCover.Size = UDim2.new(1, 0, 0.5, 0)
@@ -82,7 +83,7 @@ local Title = Instance.new("TextLabel")
 Title.BackgroundTransparency = 1
 Title.Size = UDim2.new(1, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "⚡ MASTERED UI - GOD ⚡"
+Title.Text = "⚡ THE STRONGEST UI ⚡"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 Title.TextScaled = true
@@ -115,7 +116,7 @@ PowerTitle.Position = UDim2.new(0, 0, 0.08, 0)
 PowerTitle.Size = UDim2.new(1, 0, 0, 22)
 PowerTitle.Font = Enum.Font.GothamBold
 PowerTitle.Text = "💨 SPEED: 2.5x"
-PowerTitle.TextColor3 = Color3.fromRGB(200, 255, 255)
+PowerTitle.TextColor3 = Color3.fromRGB(150, 255, 200)
 PowerTitle.TextSize = 16
 PowerTitle.Parent = PowerFrame
 
@@ -124,8 +125,8 @@ PowerDesc.BackgroundTransparency = 1
 PowerDesc.Position = UDim2.new(0, 0, 0.52, 0)
 PowerDesc.Size = UDim2.new(1, 0, 0, 20)
 PowerDesc.Font = Enum.Font.Gotham
-PowerDesc.Text = "⚡ Divine Performance"
-PowerDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
+PowerDesc.Text = "⚡ Maximum Performance"
+PowerDesc.TextColor3 = Color3.fromRGB(200, 220, 255)
 PowerDesc.TextSize = 12
 PowerDesc.Parent = PowerFrame
 
@@ -146,7 +147,7 @@ DodgeLabel.Position = UDim2.new(0.05, 0, 0.08, 0)
 DodgeLabel.Size = UDim2.new(0.9, 0, 0, 20)
 DodgeLabel.Font = Enum.Font.Gotham
 DodgeLabel.Text = "⚡ Dodges: 0"
-DodgeLabel.TextColor3 = Color3.fromRGB(200, 240, 255)
+DodgeLabel.TextColor3 = Color3.fromRGB(150, 200, 255)
 DodgeLabel.TextSize = 14
 DodgeLabel.TextXAlignment = Enum.TextXAlignment.Left
 DodgeLabel.Parent = StatsFrame
@@ -157,7 +158,7 @@ CounterLabel.Position = UDim2.new(0.05, 0, 0.32, 0)
 CounterLabel.Size = UDim2.new(0.9, 0, 0, 20)
 CounterLabel.Font = Enum.Font.Gotham
 CounterLabel.Text = "💥 Counters: 0"
-CounterLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
+CounterLabel.TextColor3 = Color3.fromRGB(255, 150, 150)
 CounterLabel.TextSize = 14
 CounterLabel.TextXAlignment = Enum.TextXAlignment.Left
 CounterLabel.Parent = StatsFrame
@@ -167,8 +168,8 @@ RangeLabel.BackgroundTransparency = 1
 RangeLabel.Position = UDim2.new(0.05, 0, 0.56, 0)
 RangeLabel.Size = UDim2.new(0.9, 0, 0, 20)
 RangeLabel.Font = Enum.Font.Gotham
-RangeLabel.Text = "🎯 Prediction: 18 studs"
-RangeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+RangeLabel.Text = "⚡ FTL Dodge: 50 studs"
+RangeLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
 RangeLabel.TextSize = 14
 RangeLabel.TextXAlignment = Enum.TextXAlignment.Left
 RangeLabel.Parent = StatsFrame
@@ -178,8 +179,8 @@ FeatureLabel.BackgroundTransparency = 1
 FeatureLabel.Position = UDim2.new(0.05, 0, 0.80, 0)
 FeatureLabel.Size = UDim2.new(0.9, 0, 0, 20)
 FeatureLabel.Font = Enum.Font.Gotham
-FeatureLabel.Text = "✨ Divine State Active"
-FeatureLabel.TextColor3 = Color3.fromRGB(255, 255, 200)
+FeatureLabel.Text = "✨ God-Like Compact Aura"
+FeatureLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
 FeatureLabel.TextSize = 12
 FeatureLabel.TextXAlignment = Enum.TextXAlignment.Left
 FeatureLabel.Parent = StatsFrame
@@ -227,7 +228,7 @@ WarningLabel.TextSize = 18
 WarningLabel.TextScaled = true
 WarningLabel.Parent = WarningFrame
 
--- STRONGEST AURA (MODIFIED: SMALL & GOD-LIKE)
+-- STRONGEST AURA
 local auraObjects = {}
 
 local function destroyAura()
@@ -242,30 +243,29 @@ end
 local function createAura()
 	destroyAura()
 	
-	-- Main aura sphere (TIGHTER & WHITER)
+	-- Main aura sphere
 	local aura = Instance.new("Part")
 	aura.Name = "StrongestAura"
-	aura.Size = Vector3.new(6.5, 6.5, 6.5) -- Small size (was 14)
+	aura.Size = Vector3.new(14, 14, 14)
 	aura.Anchored = true
 	aura.CanCollide = false
 	aura.Material = Enum.Material.Neon
-	aura.Color = Color3.fromRGB(255, 255, 255) -- God-like White
-	aura.Transparency = 0.35 -- Brighter core
+	aura.Color = Color3.fromRGB(180, 220, 255)
+	aura.Transparency = 0.6
 	aura.Shape = Enum.PartType.Ball
 	aura.CFrame = RootPart.CFrame
 	aura.Parent = FXFolder
 	table.insert(auraObjects, aura)
 	
-	-- Energy rings (THINNER & TIGHTER)
+	-- Energy rings
 	for i = 1, 8 do
 		local ring = Instance.new("Part")
-		-- Much tighter sizing logic
-		ring.Size = Vector3.new(0.3, 5 + (i * 1.5), 5 + (i * 1.5)) 
+		ring.Size = Vector3.new(0.7, 10 + (i * 4), 10 + (i * 4))
 		ring.Anchored = true
 		ring.CanCollide = false
 		ring.Material = Enum.Material.Neon
-		ring.Color = Color3.fromRGB(220, 245, 255) -- Silver/Blue tint
-		ring.Transparency = 0.4
+		ring.Color = Color3.fromRGB(150, 200, 255)
+		ring.Transparency = 0.55
 		ring.CFrame = RootPart.CFrame
 		ring.Parent = FXFolder
 		
@@ -276,15 +276,15 @@ local function createAura()
 		table.insert(auraObjects, ring)
 	end
 	
-	-- Floating particles (BRIGHT & COMPACT)
+	-- Floating particles
 	for i = 1, 16 do
 		local particle = Instance.new("Part")
-		particle.Size = Vector3.new(0.6, 0.6, 0.6)
+		particle.Size = Vector3.new(0.8, 0.8, 0.8)
 		particle.Anchored = true
 		particle.CanCollide = false
 		particle.Material = Enum.Material.Neon
-		particle.Color = Color3.fromRGB(255, 255, 255) -- Pure White
-		particle.Transparency = 0.1 -- Intense Glow
+		particle.Color = Color3.fromRGB(200, 230, 255)
+		particle.Transparency = 0.4
 		particle.Shape = Enum.PartType.Ball
 		particle.CFrame = RootPart.CFrame
 		particle.Parent = FXFolder
@@ -306,7 +306,7 @@ local function createAfterimage()
 			clone.Anchored = true
 			clone.CanCollide = false
 			clone.Material = Enum.Material.Neon
-			clone.Color = Color3.fromRGB(220, 240, 255) -- Silver tint
+			clone.Color = Color3.fromRGB(180, 220, 255)
 			clone.Transparency = 0.4
 			clone.CFrame = part.CFrame
 			clone.Parent = FXFolder
@@ -333,13 +333,13 @@ local function createShockwave(position)
 	shockwave.Anchored = true
 	shockwave.CanCollide = false
 	shockwave.Material = Enum.Material.Neon
-	shockwave.Color = Color3.fromRGB(255, 255, 255)
-	shockwave.Transparency = 0.2
+	shockwave.Color = Color3.fromRGB(180, 220, 255)
+	shockwave.Transparency = 0.3
 	shockwave.Shape = Enum.PartType.Ball
 	shockwave.Parent = FXFolder
 	
 	TweenService:Create(shockwave, TweenInfo.new(0.6), {
-		Size = Vector3.new(30, 30, 30), -- Slightly smaller shockwave
+		Size = Vector3.new(40, 40, 40),
 		Transparency = 1
 	}):Play()
 	
@@ -372,12 +372,12 @@ end
 local function createDodgeEffect(position)
 	-- Main sphere
 	local part = Instance.new("Part")
-	part.Size = Vector3.new(8, 8, 8) -- Smaller start
+	part.Size = Vector3.new(12, 12, 12)
 	part.Position = position
 	part.Anchored = true
 	part.CanCollide = false
 	part.Material = Enum.Material.Neon
-	part.Color = Color3.fromRGB(255, 255, 255)
+	part.Color = Color3.fromRGB(180, 220, 255)
 	part.Transparency = 0.2
 	part.Shape = Enum.PartType.Ball
 	part.Parent = FXFolder
@@ -385,7 +385,7 @@ local function createDodgeEffect(position)
 	-- Lightning ring (16 bolts)
 	for i = 1, 16 do
 		local lightning = Instance.new("Part")
-		lightning.Size = Vector3.new(0.3, 4, 0.3) -- Thinner
+		lightning.Size = Vector3.new(0.5, 6, 0.5)
 		lightning.Position = position
 		lightning.Anchored = true
 		lightning.CanCollide = false
@@ -394,11 +394,11 @@ local function createDodgeEffect(position)
 		lightning.Parent = FXFolder
 		
 		local angle = (i / 16) * math.pi * 2
-		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 4)
+		lightning.CFrame = CFrame.new(position) * CFrame.Angles(0, angle, math.rad(45)) * CFrame.new(0, 0, 5)
 		
 		TweenService:Create(lightning, TweenInfo.new(0.3), {
 			Transparency = 1,
-			Size = Vector3.new(0.1, 8, 0.1)
+			Size = Vector3.new(0.3, 10, 0.3)
 		}):Play()
 		Debris:AddItem(lightning, 0.3)
 	end
@@ -406,29 +406,29 @@ local function createDodgeEffect(position)
 	-- Energy burst particles
 	for i = 1, 12 do
 		local particle = Instance.new("Part")
-		particle.Size = Vector3.new(1.2, 1.2, 1.2)
+		particle.Size = Vector3.new(1.8, 1.8, 1.8)
 		particle.Position = position
 		particle.Anchored = true
 		particle.CanCollide = false
 		particle.Material = Enum.Material.Neon
-		particle.Color = Color3.fromRGB(220, 240, 255)
-		particle.Transparency = 0.1
+		particle.Color = Color3.fromRGB(200, 230, 255)
+		particle.Transparency = 0.3
 		particle.Shape = Enum.PartType.Ball
 		particle.Parent = FXFolder
 		
 		local angle = (i / 12) * math.pi * 2
-		local targetPos = position + Vector3.new(math.cos(angle) * 7, math.random(-3, 3), math.sin(angle) * 7)
+		local targetPos = position + Vector3.new(math.cos(angle) * 9, math.random(-4, 4), math.sin(angle) * 9)
 		
 		TweenService:Create(particle, TweenInfo.new(0.5), {
 			Position = targetPos,
-			Size = Vector3.new(0.2, 0.2, 0.2),
+			Size = Vector3.new(0.3, 0.3, 0.3),
 			Transparency = 1
 		}):Play()
 		Debris:AddItem(particle, 0.5)
 	end
 	
 	TweenService:Create(part, TweenInfo.new(0.6), {
-		Size = Vector3.new(18, 18, 18), -- Smaller explosion
+		Size = Vector3.new(26, 26, 26),
 		Transparency = 1
 	}):Play()
 	Debris:AddItem(part, 0.6)
@@ -440,22 +440,22 @@ end
 local function createTransmissionEffect(position)
 	for i = 1, 10 do
 		local particle = Instance.new("Part")
-		particle.Size = Vector3.new(0.8, 0.8, 0.8)
+		particle.Size = Vector3.new(1, 1, 1)
 		particle.Position = position
 		particle.Anchored = true
 		particle.CanCollide = false
 		particle.Material = Enum.Material.Neon
-		particle.Color = Color3.fromRGB(255, 255, 255)
-		particle.Transparency = 0.2
+		particle.Color = Color3.fromRGB(200, 230, 255)
+		particle.Transparency = 0.3
 		particle.Shape = Enum.PartType.Ball
 		particle.Parent = FXFolder
 		
 		local angle = (i / 10) * math.pi * 2
-		local targetPos = position + Vector3.new(math.cos(angle) * 4, math.random(-1.5, 1.5), math.sin(angle) * 4)
+		local targetPos = position + Vector3.new(math.cos(angle) * 5, math.random(-2, 2), math.sin(angle) * 5)
 		
 		TweenService:Create(particle, TweenInfo.new(0.35), {
 			Position = targetPos,
-			Size = Vector3.new(0.1, 0.1, 0.1),
+			Size = Vector3.new(0.2, 0.2, 0.2),
 			Transparency = 1
 		}):Play()
 		Debris:AddItem(particle, 0.35)
@@ -520,7 +520,7 @@ local function checkPrediction()
 	end
 end
 
--- DIVINE BARRIER (MODIFIED: TIGHTER)
+-- DIVINE BARRIER
 local barrierParts = {}
 local function createBarrier()
 	for _, part in pairs(barrierParts) do
@@ -532,12 +532,12 @@ local function createBarrier()
 	
 	for i = 1, 10 do
 		local barrier = Instance.new("Part")
-		barrier.Size = Vector3.new(1.5, 8, 0.4) -- Smaller barriers
+		barrier.Size = Vector3.new(2, 11, 0.6)
 		barrier.Anchored = true
 		barrier.CanCollide = false
 		barrier.Material = Enum.Material.Neon
-		barrier.Color = Color3.fromRGB(220, 240, 255)
-		barrier.Transparency = 0.6
+		barrier.Color = Color3.fromRGB(180, 220, 255)
+		barrier.Transparency = 0.65
 		barrier.Parent = FXFolder
 		
 		table.insert(barrierParts, barrier)
@@ -564,9 +564,8 @@ local function startStrongestUI()
 		if not UI_ENABLED or not aura or not aura.Parent then return end
 		
 		aura.CFrame = RootPart.CFrame * CFrame.Angles(0, math.rad(tick() * 90), 0)
-		-- Faster shimmer, smaller fluctuation for godly stability
-		local scale = 1 + math.sin(tick() * 10) * 0.05 
-		aura.Size = Vector3.new(6.5 * scale, 6.5 * scale, 6.5 * scale)
+		local scale = 1 + math.sin(tick() * 6) * 0.2
+		aura.Size = Vector3.new(14 * scale, 14 * scale, 14 * scale)
 		
 		-- Animate rings
 		for i, obj in pairs(auraObjects) do
@@ -575,15 +574,13 @@ local function startStrongestUI()
 			end
 		end
 		
-		-- Animate floating particles (TIGHTER ORBIT)
+		-- Animate floating particles
 		particleIndex = particleIndex + 1
 		for i, obj in pairs(auraObjects) do
 			if obj.Shape == Enum.PartType.Ball and obj ~= aura then
 				local angle = ((i + particleIndex) / 16) * math.pi * 2
-				-- Reduced Radius from 18 to 8 (Close to body)
-				local radius = 8 + math.sin(tick() * 2 + i) * 2
-				-- Reduced Height range
-				local height = math.sin(tick() * 3 + i) * 6
+				local radius = 18 + math.sin(tick() * 2 + i) * 6
+				local height = math.sin(tick() * 3 + i) * 10
 				obj.CFrame = RootPart.CFrame * CFrame.new(
 					math.cos(angle) * radius,
 					height,
@@ -618,7 +615,7 @@ local function startStrongestUI()
 		end
 	end)
 	
-	-- Barrier (Tighter Orbit)
+	-- Barrier
 	createBarrier()
 	BarrierConnection = RunService.Heartbeat:Connect(function()
 		if not UI_ENABLED then return end
@@ -626,9 +623,9 @@ local function startStrongestUI()
 			if barrier and barrier.Parent then
 				local angle = ((i - 1) / 10) * math.pi * 2 + tick() * 2.5
 				barrier.CFrame = RootPart.CFrame * CFrame.new(
-					math.cos(angle) * 11, -- Reduced radius (was 17)
+					math.cos(angle) * 17,
 					0,
-					math.sin(angle) * 11
+					math.sin(angle) * 17
 				) * CFrame.Angles(0, angle + math.rad(90), 0)
 			end
 		end
@@ -688,8 +685,8 @@ local function startStrongestUI()
 			Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			HeaderCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			wait(0.05)
-			Header.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
-			HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
+			Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+			HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
 		end
 		
 		if velocityMagnitude < 50 then
@@ -723,18 +720,18 @@ ToggleButton.MouseButton1Click:Connect(function()
 	UI_ENABLED = not UI_ENABLED
 	
 	if UI_ENABLED then
-		ToggleButton.Text = "GOD MODE"
-		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(180, 220, 255), Color3.fromRGB(200, 240, 255))
-		Header.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
-		HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
-		StatusLabel.Text = "⚡ DIVINE ⚡"
-		StatusLabel.TextColor3 = Color3.fromRGB(200, 255, 255)
+		ToggleButton.Text = "STRONGEST"
+		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(100, 200, 255), Color3.fromRGB(150, 220, 255))
+		Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+		HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+		StatusLabel.Text = "⚡ ACTIVE ⚡"
+		StatusLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
 		startStrongestUI()
 	else
 		ToggleButton.Text = "AWAKEN"
 		ButtonGradient.Color = ColorSequence.new(Color3.fromRGB(150, 50, 50), Color3.fromRGB(100, 30, 30))
-		Header.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
-		HeaderCover.BackgroundColor3 = Color3.fromRGB(200, 240, 255)
+		Header.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
+		HeaderCover.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
 		StatusLabel.Text = "🔴 DORMANT 🔴"
 		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 		stopStrongestUI()
@@ -756,4 +753,11 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 	end
 end)
 
-print("⚡🔥 THE STRONGEST ULTRA INSTINCT (GOD EDITION) LOADED 🔥⚡")
+print("⚡🔥 THE STRONGEST ULTRA INSTINCT LOADED 🔥⚡")
+print("💨 SPEED: 2.5x (40 studs/sec)")
+print("⚡ FEATURES: Auto-dodge, Prediction, Counter, Invincibility")
+print("🌟 Aura: 8 rings + 16 floating particles")
+print("💥 Effects: 16 lightning bolts, 12 particles, 10 barriers")
+print("🛡️ Shockwave pushback + 2x counter damage")
+print("✨ Instant transmission teleport effects")
+print("👑 THE STRONGEST WITH 2.5x SPEED!")
