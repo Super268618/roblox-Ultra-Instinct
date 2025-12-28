@@ -1,13 +1,9 @@
--- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE
--- Multiple modes with ultimate Superskksksjsjsj transformation
--- Place in StarterPlayer → StarterPlayerScripts
-
+-- SUPER'S ULTRA INSTINCT + SUPERSKKSKSJSJSJ MODE -- Multiple modes with ultimate Superskksksjsjsj transformation -- Place in StarterPlayer → StarterPlayerScripts
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
-
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
@@ -339,7 +335,7 @@ local function createDodgeEffect(position)
 		effectSize = 6
 	end
 	
-	local color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or 
+	local color = CURRENT_MODE == "SUPERSKKSKSJSJSJ" and Color3.fromHSV(tick() % 1, 1, 1) or
 		(CURRENT_MODE == "PERFECTION" and Color3.fromRGB(255, 200, 255) or Color3.fromRGB(150, 200, 255))
 	
 	local part = Instance.new("Part")
@@ -406,7 +402,7 @@ local function startUI()
 	if AfterimageConnection then AfterimageConnection:Disconnect() end
 	if ModeEffectConnection then ModeEffectConnection:Disconnect() end
 	
-	-- Speed boost
+	-- Speed boost (2.5x for all modes)
 	Humanoid.WalkSpeed = 16 * SPEED_BOOST[CURRENT_MODE]
 	SpeedLabel.Text = "💨 Speed: " .. SPEED_BOOST[CURRENT_MODE] .. "x"
 	
@@ -602,6 +598,6 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 print("⚡🔥 SUPER'S ULTRA INSTINCT LOADED 🔥⚡")
-print("3 MODES: MASTERED (2.5x), PERFECTION (5x), SUPERSKKSKSJSJSJ (10x)")
+print("3 MODES: MASTERED (2.5x), PERFECTION (2.5x), SUPERSKKSKSJSJSJ (2.5x)")
 print("Auto-dodge, Aura, Speed, Afterimages")
 print("Select mode then click AWAKEN!")
