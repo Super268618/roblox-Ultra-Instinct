@@ -24,8 +24,8 @@ local DODGE_DISTANCE = {
 }
 local SPEED_BOOST = {
 	MASTERED = 2.5,
-	PERFECTION = 5.0,
-	SUPERSKKSKSJSJSJ = 10.0
+	PERFECTION = 2.5,
+	SUPERSKKSKSJSJSJ = 2.5
 }
 local PROXIMITY_RANGE = 15
 local AFTERIMAGE_INTERVAL = {
@@ -145,7 +145,7 @@ PerfectionBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
 PerfectionBtn.Position = UDim2.new(0.05, 0, 0.575, 0)
 PerfectionBtn.Size = UDim2.new(0.9, 0, 0, 20)
 PerfectionBtn.Font = Enum.Font.Gotham
-PerfectionBtn.Text = "💫 PERFECTION (5.0x)"
+PerfectionBtn.Text = "💫 PERFECTION (2.5)"
 PerfectionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 PerfectionBtn.TextSize = 11
 local PerfectionCorner = Instance.new("UICorner")
@@ -158,7 +158,7 @@ SuperBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
 SuperBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
 SuperBtn.Size = UDim2.new(0.9, 0, 0, 20)
 SuperBtn.Font = Enum.Font.GothamBold
-SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ (10.0x)"
+SuperBtn.Text = "💥 SUPERSKKSKSJSJSJ (2.5x)"
 SuperBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SuperBtn.TextSize = 10
 local SuperCorner = Instance.new("UICorner")
@@ -542,7 +542,7 @@ end)
 PerfectionBtn.MouseButton1Click:Connect(function()
 	CURRENT_MODE = "PERFECTION"
 	ModeLabel.Text = "💫 Mode: PERFECTION"
-	SpeedLabel.Text = "💨 Speed: 5.0x"
+	SpeedLabel.Text = "💨 Speed: 2.5x"
 	Frame.BorderColor3 = Color3.fromRGB(200, 150, 255)
 	if UI_ENABLED then
 		stopUI()
@@ -554,7 +554,7 @@ end)
 SuperBtn.MouseButton1Click:Connect(function()
 	CURRENT_MODE = "SUPERSKKSKSJSJSJ"
 	ModeLabel.Text = "💥 Mode: SUPERSKKSKSJSJSJ"
-	SpeedLabel.Text = "💨 Speed: 10.0x"
+	SpeedLabel.Text = "💨 Speed: 2.5x"
 	if UI_ENABLED then
 		stopUI()
 		wait(0.1)
